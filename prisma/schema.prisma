@@ -1,0 +1,84 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Config {
+    id            Int      @id @default(autoincrement())
+    guildId       String   @unique
+    formChannelId String   @default("") // Channel where the form button to fill the form will be sent
+    formMessageId String   @default("") // Message id where the form button to fill the form will be sent (for clean up)
+    formCategory  String   @default("") // Category where the form will be created
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+}
+
+model Form {
+    id            Int            @id @default(autoincrement())
+    title         String         @default("")
+    guildId       String         @default("")
+    active        Boolean        @default(false)
+    responses     UserResponse[]
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    FormCategory  FormCategory[]
+    FormQuestions FormQuestion[]
+}
+
+model FormCategory {
+    id           Int            @id @default(autoincrement())
+    guildId      String         @default("")
+    name         String         @default("")
+    formId       Int            @default(0)
+    form         Form           @relation(fields: [formId], references: [id], onDelete: Cascade)
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+    FormQuestion FormQuestion[]
+}
+
+model FormQuestion {
+    id         Int          @id @default(autoincrement())
+    formId     Int          @default(0)
+    form       Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
+    categoryId Int          @default(0)
+    category   FormCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    // Type must been type of interaction: select, button
+    type       String       @default("")
+    title      String       @default("")
+    choices    String[]
+    answers    String[]
+    answersRO  Boolean      @default(false) // Respect Order of answers
+    createdAt  DateTime     @default(now())
+    updatedAt  DateTime     @updatedAt
+}
+
+model UserResponse {
+    id                 Int                  @id @default(autoincrement())
+    guildId            String               @default("") // Guild id where the user has answered
+    // On delete cascade
+    formId             Int                  @default(0) // Form id where the user has answered
+    form               Form                 @relation(fields: [formId], references: [id], onDelete: Cascade)
+    userId             String               @unique
+    channelId          String               @default("") // Channel id where the user has answered
+    status             String               @default("pending") // pending, completed
+    createdAt          DateTime             @default(now())
+    updatedAt          DateTime             @updatedAt
+    UserResponseDetail UserResponseDetail[]
+}
+
+model UserResponseDetail {
+    id                 Int          @id @default(autoincrement())
+    userResponseId     Int          @unique // User response id where the user has answered
+    userResponse       UserResponse @relation(fields: [userResponseId], references: id, onDelete: Cascade)
+    userId             String       @unique // User id where the user has answered
+    currentQuestion    Int          @default(0) // Current question index
+    currentQuestionSub Int          @default(0) // Current question sub index
+    lastAnswer         String       @default("") // Last answer of the user
+    score              Int          @default(0) // Score of the user 1 point per correct answer
+    createdAt          DateTime     @default(now())
+    updatedAt          DateTime     @updatedAt
+}

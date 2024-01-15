@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+      "target": "ESNext",
+      "module": "CommonJS",
+      "rootDir": "./src",
+      "outDir": "./build",
+      "moduleResolution": "node",
+      "strict": true,
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "allowJs": true,
+      "baseUrl": "./src",
+      "paths": {
+          "@components/*": ["components/*"],
+          "@controllers/*": ["controllers/*"],
+          "@settings/*": ["settings/*"],
+          "@models/*": ["models/*"],
+          "@interfaces/*": ["interfaces/*"],
+          "@handlers/*": ["handlers/*"],
+          "@utils/*": ["utils/*"],
+          "@tasks/*": ["tasks/*"],
+      }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "build"]
+}

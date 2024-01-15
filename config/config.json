@@ -1,0 +1,10 @@
+{
+    "command_name": "pickem",
+    "messages": [
+        {
+            "id": "error_setup",
+            "title": "Pickem | Error Setup",
+            "description": "Error Setup"
+        }
+    ]
+}

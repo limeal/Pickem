@@ -1,0 +1,479 @@
+[
+    {
+        "name": "Les victorieux de la semaine",
+        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "questions": [
+            {
+                "title": "Quelle équipe remportera la partie à la fin de la manche \"Le Duel\" ?",
+                "type": "select",
+                "choices": [
+                    "Equipe 1",
+                    "Equipe 2"
+                ],
+                "answers": [
+                    "Equipe 1"
+                ]
+            },
+            {
+                "title": "Quel joueur remportera la partie à la fin de la manche \"La Finale\" ?",
+                "type": "select",
+                "choices": [
+                    "Joueur 1",
+                    "Joueur 2",
+                    "Joueur 3"
+                ],
+                "answers": [
+                    "Joueur 1"
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Le bon ordre",
+        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "questions": [
+            {
+                "title": "Classer du meilleur au moins bon, les 6 participants de la manche \"Le Duel\"  en matière de points marqués par les objectifs accomplis.",
+                "type": "select",
+                "choices": {
+                    "shuffle": true,
+                    "default": [
+                        "Joueur 1",
+                        "Joueur 2",
+                        "Joueur 3",
+                        "Joueur 4",
+                        "Joueur 5",
+                        "Joueur 6"
+                    ]
+                },
+                "answers": [
+                    "Joueur 1",
+                    "Joueur 2",
+                    "Joueur 3",
+                    "Joueur 4",
+                    "Joueur 5",
+                    "Joueur 6"
+                ]
+            }
+        ]
+    },
+
+
+
+
+    {
+        "name": "Le tiercé gagnant",
+        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "questions": [
+            {
+                "title": "Classer du meilleur au moins bon, les 3 participants de la manche \"La Finale\"  en matière de points marqués par les objectifs accomplis. ",
+                "parts": [
+                    {
+                        "title": "Choisissez la Team.",
+                        "type": "select",
+                        "choices": {
+                            "shuffle": true,
+                            "default": [
+                                "Equipe 1",
+                                "Equipe 2",
+                                "Equipe 3"
+                            ]
+                        },
+                        "answers": [
+                            "Equipe 1"
+                        ]
+                    },
+                    {
+                        "title": "Choisissez les Joueurs dans l'ordre.",
+                        "type": "select",
+                        "depend_on": {
+                            "index": 0,
+                            "rule": "key"
+                        },
+                        "choices": {
+                            "shuffle": true,
+                            "Equipe 1": [
+                                "Joueur 1",
+                                "Joueur 2",
+                                "Joueur 3"
+                            ],
+                            "Equipe 2": [
+                                "Joueur 1",
+                                "Joueur 2",
+                                "Joueur 3"
+                            ],
+                            "Equipe 3": [
+                                "Joueur 1",
+                                "Joueur 2",
+                                "Joueur 3"
+                            ]
+                        },
+                        "answers": [
+                            "Joueur 1",
+                            "Joueur 2",
+                            "Joueur 3"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+
+
+    {
+        "name": "Le juste prix",
+        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "questions": [
+            {
+                "title": "Trouver le nombre exact d'objectifs accomplis de chaque \"Tier\" lors de la manche \"Le Duel\".",
+                "parts": [
+                    {
+                        "title": "Numero Bleu Tier 1 - (0-11)",
+                        "type": "text",
+                        "answers": [
+                            "0"
+                        ],
+                        "regex": "^[0-9]([0-1])?$"
+                    },
+                    {
+                        "title": "Numero Bleu Tier 2 - (0-9)",
+                        "type": "text",
+                        "answers": [
+                            "5"
+                        ],
+                        "regex": "^[0-9]$"
+                    },
+                    {
+                        "title": "Numero Bleu Tier 3 - (0-5)",
+                        "type": "text",
+                        "answers": [
+                            "8"
+                        ],
+                        "regex": "^[0-5]$"
+                    },
+                    {
+                        "title": "Numero Jaune Tier 1 - (0-11)",
+                        "type": "text",
+                        "depend_on": {
+                            "index": 0,
+                            "rule": "neq"
+                        },
+                        "answers": [
+                            "0"
+                        ],
+                        "regex": "^[0-9]([0-1])?$"
+                    },
+                    {
+                        "title": "Numero Jaune Tier 2 - (0-9)",
+                        "type": "text",
+                        "depend_on": {
+                            "index": 1,
+                            "rule": "neq"
+                        },
+                        "answers": [
+                            "5"
+                        ],
+                        "regex": "^[0-9]$"
+                    },
+                    {
+                        "title": "Numero Jaune Tier 3 - (0-5)",
+                        "type": "text",
+                        "depend_on": {
+                            "index": 2,
+                            "rule": "neq"
+                        },
+                        "answers": [
+                            "8"
+                        ],
+                        "regex": "^[0-5]$"
+                    }
+                ]
+            },
+            {
+                "title": "Trouver le nombre exact d'objectifs accomplis de chaque \"Tier\" lors de la manche \"La Finale\".",
+                "parts": [
+                    {
+                        "title": "Numero Bleu Tier 1 - (0-11)",
+                        "type": "text",
+                        "answers": [
+                            "0"
+                        ],
+                        "regex": "^[0-9]([0-1])?$"
+                    },
+                    {
+                        "title": "Numero Bleu Tier 2 - (0-9)",
+                        "type": "text",
+                        "answers": [
+                            "5"
+                        ],
+                        "regex": "^[0-9]$"
+                    },
+                    {
+                        "title": "Numero Jaune Tier 1 - (0-11)",
+                        "type": "text",
+                        "depend_on": {
+                            "index": 0,
+                            "rule": "neq"
+                        },
+                        "answers": [
+                            "0"
+                        ],
+                        "regex": "^[0-9]([0-1])?$"
+                    },
+                    {
+                        "title": "Numero Jaune Tier 2 - (0-9)",
+                        "type": "text",
+                        "depend_on": {
+                            "index": 1,
+                            "rule": "neq"
+                        },
+                        "answers": [
+                            "5"
+                        ],
+                        "regex": "^[0-9]$"
+                    }
+                ]
+            }
+        ]
+    },
+
+
+
+    {
+        "name": "La question bonus",
+        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "questions": [
+            {
+                "title": {
+                    "random": true,
+                    "choices": [
+                        {
+                            "cat": "cat_0",
+                            "key": "En combien de temps sera accompli le premier objectif de Tier 1 durant la manche \"Le Duel\" ?",
+                            "answer_index": 0
+                        },
+                        {
+                            "cat": "cat_0",
+                            "key": "En combien de temps sera accompli le premier objectif de Tier 2 durant la manche \"Le Duel\" ?",
+                            "answer_index": 1
+                        },
+                        {
+                            "cat": "cat_0",
+                            "key": "En combien de temps sera accompli le premier objectif de Tier 3 durant la manche \"Le Duel\" ?",
+                            "answer_index": 2
+                        },
+                        {
+                            "cat": "cat_0",
+                            "key": "En combien de temps sera accompli le premier objectif dans le Nether durant la manche \"Le Duel\" ?",
+                            "answer_index": 3
+                        },
+                        {
+                            "cat": "cat_0",
+                            "key": "En combien de temps sera accompli le premier objectif dans l’End durant la manche \"Le Duel\" ?",
+                            "answer_index": 4
+                        }
+                    ]
+                },
+                "type": "select",
+                "choices": {
+                    "cat_0": [
+                        "1 à 5 Minutes",
+                        "6 à 10 Minutes",
+                        "11 à 15 Minutes",
+                        "16 à 20 Minutes",
+                        "21 à 25 Minutes",
+                        "26 à 30 Minutes",
+                        "31 à 35 Minutes",
+                        "36 à 40 Minutes",
+                        "41 à 45 Minutes",
+                        "46 à 50 Minutes",
+                        "51 à 55 Minutes",
+                        "56 à 60 Minutes"
+                    ],
+                    "cat_1": [
+                        "1 Minute",
+                        "2 à 3 Minutes",
+                        "4 à 5 Minutes",
+                        "6 à 7 Minutes",
+                        "8 à 9 Minutes",
+                        "10 à 12 Minutes",
+                        "13 à 15 Minutes",
+                        "16 à 18 Minutes",
+                        "19 à 21 Minutes",
+                        "22 à 24 Minutes",
+                        "25 à 27 Minutes",
+                        "28 à 30 Minutes"
+                    ],
+                    "cat_2": [
+                        "1 à 2 Points",
+                        "3 à 4 Points",
+                        "5 à 6 Points",
+                        "7 à 9 Points",
+                        "10 à 12 Points",
+                        "13 à 15 Points",
+                        "16 à 18 Points",
+                        "19 à 21 Points",
+                        "22 à 24 Points",
+                        "25 à 27 Points",
+                        "28 à 30 Points"
+                    ],
+                    "cat_3": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 à 3 objectifs",
+                        "4 à 5 objectifs",
+                        "6 à 7 objectifs",
+                        "8 à 9 objectifs",
+                        "10 à 12 objectifs",
+                        "13 à 15 objectifs",
+                        "16 à 18 objectifs",
+                        "19 à 21 objectifs",
+                        "22 à 24 objectifs",
+                        "25 à 27 objectifs"
+                    ],
+                    "cat_4": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 objectifs",
+                        "3 objectifs",
+                        "4 objectifs",
+                        "5 à 6 objectifs",
+                        "7 à 8 objectifs",
+                        "9 à 10 objectifs",
+                        "11 à 12 objectifs",
+                        "13 à 14 objectifs",
+                        "15 à 16 objectifs",
+                        "17 à 18 objectifs"
+                    ],
+                    "cat_5": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 objectifs",
+                        "3 objectifs",
+                        "4 objectifs",
+                        "5 à 6 objectifs",
+                        "7 à 8 objectifs",
+                        "9 à 10 objectifs",
+                        "11 à 15 objectifs",
+                        "16 à 20 objectifs",
+                        "21 à 25 objectifs",
+                        "Plus de 25 objectifs"
+                    ],
+                    "cat_6": [
+                        "0 Morts",
+                        "1 à 5 Mort",
+                        "6 à 10 Morts",
+                        "11 à 15 Morts",
+                        "16 à 20 Morts",
+                        "21 à 25 Morts",
+                        "26 à 30 Morts",
+                        "31 à 35 Morts",
+                        "36 à 40 Morts",
+                        "41 à 45 Morts",
+                        "46 à 50 Morts",
+                        "Plus de 50 Morts"
+                    ]
+                },
+                "answers": {
+                    "cat_0": [
+                        "1 à 5 Minutes",
+                        "6 à 10 Minutes",
+                        "11 à 15 Minutes",
+                        "16 à 20 Minutes",
+                        "21 à 25 Minutes",
+                        "26 à 30 Minutes",
+                        "31 à 35 Minutes",
+                        "36 à 40 Minutes",
+                        "41 à 45 Minutes",
+                        "46 à 50 Minutes",
+                        "51 à 55 Minutes",
+                        "56 à 60 Minutes"
+                    ],
+                    "cat_1": [
+                        "1 Minute",
+                        "2 à 3 Minutes",
+                        "4 à 5 Minutes",
+                        "6 à 7 Minutes",
+                        "8 à 9 Minutes",
+                        "10 à 12 Minutes",
+                        "13 à 15 Minutes",
+                        "16 à 18 Minutes",
+                        "19 à 21 Minutes",
+                        "22 à 24 Minutes",
+                        "25 à 27 Minutes",
+                        "28 à 30 Minutes"
+                    ],
+                    "cat_2": [
+                        "1 à 2 Points",
+                        "3 à 4 Points",
+                        "5 à 6 Points",
+                        "7 à 9 Points",
+                        "10 à 12 Points",
+                        "13 à 15 Points",
+                        "16 à 18 Points",
+                        "19 à 21 Points",
+                        "22 à 24 Points",
+                        "25 à 27 Points",
+                        "28 à 30 Points"
+                    ],
+                    "cat_3": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 à 3 objectifs",
+                        "4 à 5 objectifs",
+                        "6 à 7 objectifs",
+                        "8 à 9 objectifs",
+                        "10 à 12 objectifs",
+                        "13 à 15 objectifs",
+                        "16 à 18 objectifs",
+                        "19 à 21 objectifs",
+                        "22 à 24 objectifs",
+                        "25 à 27 objectifs"
+                    ],
+                    "cat_4": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 objectifs",
+                        "3 objectifs",
+                        "4 objectifs",
+                        "5 à 6 objectifs",
+                        "7 à 8 objectifs",
+                        "9 à 10 objectifs",
+                        "11 à 12 objectifs",
+                        "13 à 14 objectifs",
+                        "15 à 16 objectifs",
+                        "17 à 18 objectifs"
+                    ],
+                    "cat_5": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 objectifs",
+                        "3 objectifs",
+                        "4 objectifs",
+                        "5 à 6 objectifs",
+                        "7 à 8 objectifs",
+                        "9 à 10 objectifs",
+                        "11 à 15 objectifs",
+                        "16 à 20 objectifs",
+                        "21 à 25 objectifs",
+                        "Plus de 25 objectifs"
+                    ],
+                    "cat_6": [
+                        "0 Morts",
+                        "1 à 5 Mort",
+                        "6 à 10 Morts",
+                        "11 à 15 Morts",
+                        "16 à 20 Morts",
+                        "21 à 25 Morts",
+                        "26 à 30 Morts",
+                        "31 à 35 Morts",
+                        "36 à 40 Morts",
+                        "41 à 45 Morts",
+                        "46 à 50 Morts",
+                        "Plus de 50 Morts"
+                    ]
+                }
+            }
+        ]
+    }
+]

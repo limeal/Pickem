@@ -1,0 +1,212 @@
+{
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "image": {
+                "type": "string"
+            },
+            "questions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": [
+                                "string",
+                                "object"
+                            ],
+                            "properties": {
+                                "random": {
+                                    "type": "boolean"
+                                },
+                                "choices": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": [
+                                            "string",
+                                            "object"
+                                        ],
+                                        "properties": {
+                                            "key": {
+                                                "type": "string"
+                                            },
+                                            "answer_index": {
+                                                "type": "number"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "button",
+                                "text",
+                                "select"
+                            ]
+                        },
+                        "regex": {
+                            "type": "string"
+                        },
+                        "choices": {
+                            "type": [
+                                "array",
+                                "object"
+                            ],
+                            "items": {
+                                "type": "string"
+                            },
+                            "patternProperties": {
+                                ".*": {
+                                    "type": [
+                                        "string",
+                                        "array",
+                                        "boolean"
+                                    ],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "answers": {
+                            "type": [
+                                "array",
+                                "object"
+                            ],
+                            "items": {
+                                "type": "string"
+                            },
+                            "patternProperties": {
+                                ".*": {
+                                    "type": [
+                                        "string",
+                                        "array"
+                                    ],
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "parts": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": [
+                                            "string",
+                                            "object"
+                                        ],
+                                        "properties": {
+                                            "random": {
+                                                "type": "boolean"
+                                            },
+                                            "titles": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "button",
+                                            "text",
+                                            "select"
+                                        ]
+                                    },
+                                    "depend_on": {
+                                        "type": "object",
+                                        "default": 0,
+                                        "properties": {
+                                            "index": {
+                                                "type": "number"
+                                            },
+                                            "rule": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "key",
+                                                    "neq",
+                                                    "eq",
+                                                    "gt"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "regex": {
+                                        "type": "string",
+                                        "default": ".*"
+                                    },
+                                    "choices": {
+                                        "type": [
+                                            "array",
+                                            "object"
+                                        ],
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "patternProperties": {
+                                            ".*": {
+                                                "type": [
+                                                    "string",
+                                                    "array",
+                                                    "boolean"
+                                                ],
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "answers": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "title",
+                                    "type",
+                                    "answers"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "oneOf": [
+                        {
+                            "required": [
+                                "title",
+                                "parts"
+                            ]
+                        },
+                        {
+                            "required": [
+                                "title",
+                                "type",
+                                "answers"
+                            ]
+                        }
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "required": [
+            "name",
+            "image",
+            "questions"
+        ],
+        "additionalProperties": false
+    }
+}
