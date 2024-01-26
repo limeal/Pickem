@@ -7,7 +7,10 @@
     "clean": "tsc --build --clean",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "db:migrate": "prisma migrate dev --name init",
+    "db:push": "prisma db push",
     "db:pull": "prisma db pull",
+    "db:reset": "prisma migrate reset",
+    "db:format": "prisma format",
     "commands:reload": "ts-node -r tsconfig-paths/register src/scripts/register.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,9 +22,15 @@
     "ajv": "^8.12.0",
     "discord.js": "^14.13.0",
     "dotenv": "^16.3.1",
+    "jimp": "^0.22.10",
+    "node-cron": "^3.0.3",
     "prisma": "^5.3.0",
+    "randexp": "^0.5.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/node-cron": "^3.0.11"
   }
 }

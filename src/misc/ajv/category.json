@@ -1,0 +1,24 @@
+{
+    "$id": "category.json",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "image": {
+            "type": "string"
+        },
+        "questions": {
+            "type": "array",
+            "items": {
+                "$ref": "question.json#"
+            }
+        }
+    },
+    "required": [
+        "name",
+        "image",
+        "questions"
+    ],
+    "additionalProperties": false
+}

@@ -1,25 +1,25 @@
 import {
-    TextInputStyle,
     Interaction,
     ButtonStyle,
     ButtonInteraction,
     ChannelType,
     PermissionFlagsBits,
-    EmbedBuilder,
-    Colors,
-    Guild
+    Guild,
+    ActionRowBuilder,
+    ButtonBuilder,
 } from 'discord.js';
 
 import BaseInteraction from '../classes/BaseInteraction';
 import BaseButton from '../classes/BaseButton';
 import prisma from '../prisma';
+import InteractionProps from '@interfaces/InteractionProps';
+import FillFormMessage from 'messages/FillFormMessage';
 
-export default class FillFormButton extends BaseButton implements BaseInteraction {
-    static ID = 'pickem_new_form_button';
+export default ((props: InteractionProps) => new (class FillFormButton extends BaseButton implements BaseInteraction {
 
     constructor() {
         super({
-            customId: FillFormButton.ID,
+            customId: props.custom_id,
             title: "Fill form",
             style: ButtonStyle.Primary,
             emoji: '📝'
@@ -30,11 +30,12 @@ export default class FillFormButton extends BaseButton implements BaseInteractio
         return this.button;
     }
 
-    async setupChannel(guild: Guild, interaction: Interaction) {
+    async setupChannel(guild: Guild, config: any, interaction: Interaction) {
         // Create a new channel in the category
         const newChannel = await guild.channels.create({
-            name: `Ticket-${interaction.user.username}`,
+            name: `ticket-${interaction.user.username}`,
             type: ChannelType.GuildText,
+            parent: config?.formCategoryId,
             permissionOverwrites: [
                 {
                     id: guild.id,
@@ -52,21 +53,23 @@ export default class FillFormButton extends BaseButton implements BaseInteractio
         });
 
         if (!newChannel) {
-            throw 'An error occured, please try again.';
+            throw 'Could not create channel.';
         }
 
         // Send message in the channel
-        const embed = new EmbedBuilder()
-            .setTitle('Pickem | New form !')
-            .setColor(Colors.Grey)
-            .setDescription('Rempli le formulaire jusqu\'au bout !');
+        const payload = FillFormMessage();
 
-        if (!embed) {
-            throw 'An error occured, please try again.';
-        }
+        if (!payload) throw 'Could not create embed.';
 
-        await newChannel.send({ embeds: [embed] });
-        return newChannel;
+        return {
+            channel: newChannel, payload: {
+                ...payload,
+                components: [
+                    new ActionRowBuilder<ButtonBuilder>().addComponents(
+                        props.manager.Get('start-form-button')!.unwrap())
+                ]
+            }
+        };
     }
 
     async execute(interaction: ButtonInteraction) {
@@ -76,7 +79,7 @@ export default class FillFormButton extends BaseButton implements BaseInteractio
 
         const config = await prisma.config.findFirst({
             where: {
-                guildId: interaction.guildId!,
+                id: 0,
             },
         });
 
@@ -92,34 +95,76 @@ export default class FillFormButton extends BaseButton implements BaseInteractio
         // Get current active form
         const form = await prisma.form.findFirst({
             where: {
-                guildId: guild.id,
                 active: true,
             },
         });
 
-        try {
-            // Create a new channel in the category + send message
-            const newChannel = await this.setupChannel(guild, interaction);
-
-            // Create a new response in database
-            await prisma.userResponse.create({
-                data: {
-                    guildId: guild.id,
-                    formId: form?.id,
-                    userId: interaction.user.id,
-                    channelId: newChannel.id,
-                },
-            });
-            
-            // Summon a formquestion in the channel
-
-        } catch (error: any) {
+        if (!form) {
+            // If no form is active, reply to user to set it up
             await interaction.reply({
-                content: 'An error occured, please try again.',
+                content: 'No form is created, please run `/pickem new <name> <file>`',
                 ephemeral: true,
             });
             return;
         }
+
+        let res = null;
+        try {
+            // Create a new channel in the category + send message
+            res = await this.setupChannel(guild, config, interaction);
+
+            // Create a new response in database
+            await prisma.userResponse.create({
+                data: {
+                    formId: form?.id,
+                    userId: interaction.user.id,
+                    channelId: res.channel.id,
+                },
+            });
+
+            // Summon a form question in the channel
+            await interaction.reply({
+                content: `New form created in <#${res.channel.id}>`,
+                ephemeral: true,
+            });
+
+            return res.channel.send(res.payload);
+        } catch (error: any) {
+            console.error(error?.code);
+            res?.channel?.delete();
+            if (error.code && error.code === '10003') return;
+            if (error.code && error.code === 'P2002') {
+                // Find userResponse status
+                const userResponse = await prisma.userResponse.findFirst({
+                    where: {
+                        userId: interaction.user.id,
+                    },
+                    select: {
+                        channelId: true,
+                        status: true,
+                    },
+                });
+
+                if (!userResponse) {
+                    await interaction.reply({
+                        content: 'Could not find user response, please try again.',
+                        ephemeral: true,
+                    });
+                    return;
+                }
+
+                return await interaction.reply({
+                    content: `You'r submission is currently ${userResponse?.status}${userResponse?.status === 'pending' ? ` in <#${userResponse.channelId}>` : ''}.`,
+                    ephemeral: true,
+                });
+                return;
+            } else {
+                await interaction.reply({
+                    content: 'ERR L001 - An error occured, please try again.',
+                    ephemeral: true,
+                });
+            }
+        }
     }
 
-}
+})) as (props: InteractionProps) => BaseInteraction;

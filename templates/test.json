@@ -1,0 +1,111 @@
+[
+    {
+        "name": "Les victorieux de la semaine",
+        "image": "victorieux_semaine.png",
+        "questions": [
+            {
+                "title": "Quelle équipe remportera la partie à la fin de la manche \"Le Duel\" ?",
+                "type": "select",
+                "choices": [
+                    "Equipe 1",
+                    "Equipe 2"
+                ],
+                "answers": [
+                    "Equipe 1"
+                ],
+                "coordinates": [
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 175,
+                        "height": 539
+                    }
+                ]
+            },
+            {
+                "title": "Quel joueur remportera la partie à la fin de la manche \"La Finale\" ?",
+                "type": "select",
+                "choices": [
+                    "Joueur 1",
+                    "Joueur 2",
+                    "Joueur 3"
+                ],
+                "answers": [
+                    "Joueur 1"
+                ],
+                "coordinates": [
+                    {
+                        "x": 931,
+                        "y": 597,
+                        "width": 175,
+                        "height": 539
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Le bon ordre",
+        "image": "bon_ordre.png",
+        "questions": [
+            {
+                "title": "Classer du meilleur au moins bon, les 6 participants de la manche \"Le Duel\"  en matière de points marqués par les objectifs accomplis.",
+                "type": "select",
+                "choices": [
+                    "Joueur 1",
+                    "Joueur 2",
+                    "Joueur 3",
+                    "Joueur 4",
+                    "Joueur 5",
+                    "Joueur 6"
+                ],
+                "answers": [
+                    "Joueur 1",
+                    "Joueur 2",
+                    "Joueur 3",
+                    "Joueur 4",
+                    "Joueur 5",
+                    "Joueur 6"
+                ],
+                "coordinates": [
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    }
+                ]
+            }
+        ]
+    }
+]

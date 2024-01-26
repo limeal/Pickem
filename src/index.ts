@@ -1,9 +1,12 @@
-import { Client, Events, GatewayIntentBits, Collection } from 'discord.js';
-import prisma from './prisma';
-
+import { Client, Events, GatewayIntentBits, Collection, Guild } from 'discord.js';
+import cron from 'node-cron';
 import dotenv from 'dotenv';
 
+
+import prisma from './prisma';
 import commands from './registries/register_commands';
+import interactionManager from 'registries/register_interactions';
+import { ChangeForm } from 'services/form.service';
 
 //////////////////////////
 // LOAD ENVIRONMENT VARIABLES
@@ -25,111 +28,48 @@ const client = new Client({
     ],
 });
 
+let guild : Guild;
+
 //////////////////////////
 // LAUNCH CLIENT
 //////////////////////////
 
 (async () => {
 
-
     client.on(Events.InteractionCreate, async interaction => {
         if (interaction.isCommand()) {
+            console.log('CMD');
             const command = commands.get(interaction.commandName);
             command?.execute(interaction);
             return;
         }
 
-        console.log(interaction.id);
-        //interactions.get(interaction.id)?.execute(interaction);
-
-
-        /* if (interaction.customId === 'add_cookie' || interaction.customId === 'view_cookie') {
-            const user = await prisma.user.findFirst({
-                where: {
-                    discordId: interaction.user.id,
-                },
-            });
-
-            if (interaction.customId === 'add_cookie') {
-                // Get the number of cookies you have in the database or create a new entry
-
-                if (!user) {
-                    await prisma.user.create({
-                        data: {
-                            guildId: interaction.guildId!,
-                            discordId: interaction.user.id,
-                            score: 1,
-                        },
-                    });
-                } else {
-                    user.score += 1;
-                    await prisma.user.update({
-                        where: {
-                            id: user.id,
-                        },
-                        data: {
-                            score: user.score,
-                        },
-                    });
-                }
-            }
-
-            await interaction.reply({
-                content: `You have ${user?.score || 0} cookie!`,
-                ephemeral: true,
-            }).then(msg => {
-                setTimeout(() => msg.delete(), 1000)
-            });
-
-        } else if (interaction.customId === 'leaderboard') {
-            const users = await prisma.user.findMany({
-                where: {
-                    guildId: interaction.guildId!,
-                },
-                orderBy: {
-                    score: 'desc',
-                },
-            });
-
-            let leaderboard = '';
-            for (const user of users) {
-                const discordUser = await client.users.fetch(user.discordId);
-                leaderboard += `${discordUser.username} has ${user.score} cookies!\n`;
-            }
-
-            await interaction.reply({
-                content: leaderboard,
-                ephemeral: true,
-            }).then(msg => {
-                setTimeout(() => msg.delete(), 1000)
-            });
-        } else if (interaction.customId === 'prices') {
-            const prices = await prisma.price.findMany({
-                where: {
-                    guildId: interaction.guildId!,
-                },
-            });
-
-            let pricesMessage = '';
-            for (const price of prices) {
-                pricesMessage += `${price.name}: ${price.description} (${price.level} cookies)\n`;
-            }
-
-            if (pricesMessage === '') {
-                pricesMessage = 'No prices yet!';
-            }
-
-            await interaction.reply({
-                content: pricesMessage,
-                ephemeral: true,
-            }).then(msg => {
-                setTimeout(() => msg.delete(), 1000)
-            })
-        } */
-
+        if (!('customId' in interaction)) return;
+        console.log(`CMD: ${interaction.customId}`);
+        interactionManager.Get(interaction.customId)?.execute(interaction);
     });
 
-    client.once(Events.ClientReady, () => {
+    client.on(Events.GuildCreate, async guild => {
+        if (guild.id !== process.env.DISCORD_GUILD_ID) await guild.leave();
+    })
+
+    client.once(Events.ClientReady, async () => {
+
+        //////////////////////////
+        /// LOAD CRON
+        //////////////////////////
+        guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID!);
+
+        console.log('Loading cron jobs...');
+        prisma.formCron.findMany().then(cronJobs => {
+            for (const cronJob of cronJobs) {
+                console.log(`Loading cron job: ${cronJob.cron}`);
+                cron.schedule(cronJob.cron, async () => {
+                    ChangeForm(cronJob.formId, guild);
+                })
+            }
+        });
+
         console.log(`Logged in as ${client.user!.tag}!`);
     });
 

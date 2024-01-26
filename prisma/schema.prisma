@@ -4,81 +4,117 @@ generator client {
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
+    url      = env("POSTGRES_URL")
 }
 
 model Config {
-    id            Int      @id @default(autoincrement())
-    guildId       String   @unique
-    formChannelId String   @default("") // Channel where the form button to fill the form will be sent
-    formMessageId String   @default("") // Message id where the form button to fill the form will be sent (for clean up)
-    formCategory  String   @default("") // Category where the form will be created
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
+    id               Int      @id @default(0)
+    formChannelId    String   @default("") // Channel where the form button to fill the form will be sent
+    formMessageId    String   @default("") // Message id where the form button to fill the form will be sent (for clean up)
+    formCategoryId   String   @default("") // Category where the form will be created
+    resultCategoryId String   @default("") // Category where the results will be created
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
 }
 
 model Form {
-    id            Int            @id @default(autoincrement())
-    title         String         @default("")
-    guildId       String         @default("")
-    active        Boolean        @default(false)
-    responses     UserResponse[]
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-    FormCategory  FormCategory[]
-    FormQuestions FormQuestion[]
+    id         Int            @id @default(autoincrement())
+    title      String         @default("")
+    active     Boolean        @default(false)
+    responses  UserResponse[]
+    createdAt  DateTime       @default(now())
+    updatedAt  DateTime       @updatedAt
+    questions  FormQuestion[] @relation("FormQuestion")
+    categories FormCategory[] @relation("FormCategory")
+
+    // Ignored
+    FormCron FormCron?
+}
+
+model FormCron {
+    id        Int      @id @default(autoincrement())
+    formId    Int      @unique
+    form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+    cron      String   @default("") // Cron expression
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model FormCategory {
     id           Int            @id @default(autoincrement())
-    guildId      String         @default("")
     name         String         @default("")
-    formId       Int            @default(0)
-    form         Form           @relation(fields: [formId], references: [id], onDelete: Cascade)
+    icon         String         @default("")
+    formId       Int
+    form         Form           @relation("FormCategory", fields: [formId], references: [id], onDelete: Cascade)
+    questions    FormQuestion[] @relation("FormCategory")
     createdAt    DateTime       @default(now())
     updatedAt    DateTime       @updatedAt
-    FormQuestion FormQuestion[]
+    UserResponse UserResponse[]
+}
+
+model FormQuestionCoord {
+    id Int @id @default(autoincrement())
+
+    FormQuestion FormQuestion @relation("FormQuestionCoord", fields: [questionId], references: [id])
+    questionId   Int
+
+    x      Int @default(0)
+    y      Int @default(0)
+    width  Int @default(0)
+    height Int @default(0)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model FormQuestion {
-    id         Int          @id @default(autoincrement())
-    formId     Int          @default(0)
-    form       Form         @relation(fields: [formId], references: [id], onDelete: Cascade)
-    categoryId Int          @default(0)
-    category   FormCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    id             Int            @id @default(autoincrement())
+    formId         Int
+    form           Form           @relation("FormQuestion", fields: [formId], references: [id], onDelete: Cascade)
+    categoryId     Int
+    category       FormCategory   @relation("FormCategory", fields: [categoryId], references: [id], onDelete: Cascade)
+    parentId       Int?
+    parentQuestion FormQuestion?  @relation("SubQuestions", fields: [parentId], references: [id])
+    questions      FormQuestion[] @relation("SubQuestions")
     // Type must been type of interaction: select, button
-    type       String       @default("")
-    title      String       @default("")
-    choices    String[]
-    answers    String[]
-    answersRO  Boolean      @default(false) // Respect Order of answers
-    createdAt  DateTime     @default(now())
-    updatedAt  DateTime     @updatedAt
+    type           String         @default("")
+    title          String         @default("")
+    regex          String         @default("") // Regex to validate the answer
+    spRegex        String         @default("") // SP Regex (!=, >, <, >=, <=)
+    choices        String[]
+    answers        String[] // Answers of the question
+    createdAt      DateTime       @default(now())
+    updatedAt      DateTime       @updatedAt
+
+    coordinates FormQuestionCoord[] @relation("FormQuestionCoord")
+    // Ignored
+    submissions UserSubmission[]
 }
 
 model UserResponse {
-    id                 Int                  @id @default(autoincrement())
-    guildId            String               @default("") // Guild id where the user has answered
-    // On delete cascade
-    formId             Int                  @default(0) // Form id where the user has answered
-    form               Form                 @relation(fields: [formId], references: [id], onDelete: Cascade)
-    userId             String               @unique
-    channelId          String               @default("") // Channel id where the user has answered
-    status             String               @default("pending") // pending, completed
-    createdAt          DateTime             @default(now())
-    updatedAt          DateTime             @updatedAt
-    UserResponseDetail UserResponseDetail[]
+    id            Int              @id @default(autoincrement())
+    formId        Int              @default(0) // Form id where the user has answered
+    form          Form             @relation(fields: [formId], references: [id], onDelete: Cascade)
+    categoryId    Int?
+    category      FormCategory?    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    submissions   UserSubmission[]
+    userId        String           @unique
+    channelId     String           @default("") // Channel id where the user is completing the form
+    respChannelId String           @default("") // Channel id where the user has the answer of the sform
+    status        String           @default("pending") // pending, completed
+    score         Int              @default(0) // Score of the user 1 point per correct answer
+    createdAt     DateTime         @default(now())
+    updatedAt     DateTime         @updatedAt
 }
 
-model UserResponseDetail {
-    id                 Int          @id @default(autoincrement())
-    userResponseId     Int          @unique // User response id where the user has answered
-    userResponse       UserResponse @relation(fields: [userResponseId], references: id, onDelete: Cascade)
-    userId             String       @unique // User id where the user has answered
-    currentQuestion    Int          @default(0) // Current question index
-    currentQuestionSub Int          @default(0) // Current question sub index
-    lastAnswer         String       @default("") // Last answer of the user
-    score              Int          @default(0) // Score of the user 1 point per correct answer
-    createdAt          DateTime     @default(now())
-    updatedAt          DateTime     @updatedAt
+model UserSubmission {
+    id         Int          @id @default(autoincrement())
+    userRespId Int // User response id where the user has answered
+    userResp   UserResponse @relation(fields: [userRespId], references: [id], onDelete: Cascade)
+    questionId Int // Question id where the user has answered
+    question   FormQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    answers    String[] // Answer of the user
+    done       Boolean      @default(false) // If the user has answered the question with all the subquestions
+    createdAt  DateTime     @default(now())
+    updatedAt  DateTime     @updatedAt
 }

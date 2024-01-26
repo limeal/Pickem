@@ -6,46 +6,51 @@ export default class BaseSelect {
     select: BaseSelectMenuBuilder<any> | null;
 
     constructor(
+        customId: string,
         type: 'STRING' | 'USER' | 'CHANNEL' | 'ROLE' | 'MENTIONABLE',
         minValues?: number,
         maxValues?: number,
-        choices?: RestOrArray<APISelectMenuOption | StringSelectMenuOptionBuilder | SelectMenuComponentOptionData>
+        choices?: string[]
     ) {
         this.type = type;
+        this.select = null;
         // Compare T to determine which type of select to build
+
+        console.log('Creating select', type, minValues, maxValues, choices);
+
         switch (type) {
             case 'STRING':
-                if (!choices) {
-                    throw new Error('No choices provided for string select menu');
-                }
-
+                if (!choices) return;
                 this.select = new StringSelectMenuBuilder()
-                    .setCustomId('string_select')
+                    .setCustomId(customId)
                     .setPlaceholder(`Select ${minValues && minValues > 1 ? `${minValues}` : 'an'} option(s)`)
-                    .addOptions(...choices!);
+                    .addOptions(...choices.map((choice: any) => {
+                         return new StringSelectMenuOptionBuilder()
+                          .setLabel(choice)
+                          .setValue(choice.toLowerCase().replace(/ /g, '_'))
+                     }));
                 break;
             case 'USER':
                 this.select = new UserSelectMenuBuilder()
-                    .setCustomId('user_select')
+                    .setCustomId(customId)
                     .setPlaceholder('Select a user')
                 break;
             case 'CHANNEL':
                 this.select = new ChannelSelectMenuBuilder()
-                    .setCustomId('channel_select')
+                    .setCustomId(customId)
                     .setPlaceholder('Select a channel')
                 break;
             case 'ROLE':
                 this.select = new RoleSelectMenuBuilder()
-                    .setCustomId('role_select')
+                    .setCustomId(customId)
                     .setPlaceholder('Select a role')
                 break;
             case 'MENTIONABLE':
                 this.select = new MentionableSelectMenuBuilder()
-                    .setCustomId('mentionable_select')
+                    .setCustomId(customId)
                     .setPlaceholder('Select a mentionable')
                 break;
             default:
-                this.select = null;
                 return;
         }
 

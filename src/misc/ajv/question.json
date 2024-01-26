@@ -1,0 +1,138 @@
+{
+    "$id": "question.json",
+    "type": "object",
+    "properties": {
+        "title": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "cat": {
+                            "type": "string"
+                        },
+                        "key": {
+                            "type": "string"
+                        },
+                        "answer_indexes": {
+                            "anyOf": [
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "number"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "type": {
+            "type": "string",
+            "enum": [
+                "button",
+                "text",
+                "select"
+            ]
+        },
+        "depend_on": {
+            "type": "object",
+            "default": 0,
+            "properties": {
+                "index": {
+                    "type": "number"
+                },
+                "rule": {
+                    "type": "string",
+                    "enum": [
+                        "key",
+                        "!=",
+                        "==",
+                        ">"
+                    ]
+                }
+            }
+        },
+        "regex": {
+            "type": "string"
+        },
+        "choices": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "type": "object",
+                    "patternProperties": {
+                        ".*": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "answers": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "type": "object",
+                    "patternProperties": {
+                        ".*": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "coordinates": {
+            "type": "array",
+            "items": {
+                "$ref": "coords.json#"
+            }
+        },
+        "parts": {
+            "type": "array",
+            "items": {
+                "$ref": "#"
+            }
+        }
+    },
+    "oneOf": [
+        {
+            "required": [
+                "title",
+                "parts",
+                "coordinates"
+            ]
+        },
+        {
+            "required": [
+                "title",
+                "type",
+                "answers",
+                "coordinates"
+            ]
+        }
+    ],
+    "additionalProperties": false
+}

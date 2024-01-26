@@ -12,6 +12,17 @@ services:
       - POSTGRES_HOST=${DATABASE_HOST}
     ports:
       - "5432:5432"
+
+  mongodb:
+    image: mongo:6-jammy
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DATABASE_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DATABASE_PASSWORD}
+      - MONGO_INITDB_DATABASE=${DATABASE_NAME}
+    ports:
+      - "27017:27017"
   bot:
     build: .
     env_file:
@@ -25,3 +36,4 @@ networks:
 
 volumes:
   postgres_data: {}
+  mongo_data: {}

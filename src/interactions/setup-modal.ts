@@ -7,24 +7,33 @@ import {
     TextChannel,
     ButtonBuilder,
     ActionRowBuilder,
+    AttachmentBuilder,
+    Collection,
 } from 'discord.js';
 
 import BaseInteraction from '../classes/BaseInteraction';
 import BaseModal from '../classes/BaseModal';
 import prisma from '../prisma';
-import FillFormButton from './fill-form-button';
+import InteractionProps from '@interfaces/InteractionProps';
+import SetupModalMessage from 'messages/SetupModalMessage';
 
-export default class SetupModal extends BaseModal implements BaseInteraction {
-    static ID = 'pickem_setup';
+export default (props: InteractionProps) => new (class SetupModal extends BaseModal implements BaseInteraction {
 
     constructor() {
         super({
-            customId: SetupModal.ID,
+            customId: props.custom_id,
             title: 'Pickem | Setup'
         }, [
             {
-                customId: 'pickem_setup_category',
-                label: "Category where forms channels be created?",
+                customId: 'pickem_forms_category',
+                label: "Category where questions will be asked",
+                placeholder: "Category ID",
+                style: TextInputStyle.Short,
+                required: true
+            },
+            {
+                customId: 'pickem_result_category',
+                label: "Category where results is announced",
                 placeholder: "Category ID",
                 style: TextInputStyle.Short,
                 required: true
@@ -44,90 +53,110 @@ export default class SetupModal extends BaseModal implements BaseInteraction {
     }
 
     async execute(interaction: ModalSubmitInteraction) {
-        const categoryForm = interaction.fields.getTextInputValue('pickem_setup_category');
+        const categoryForm = interaction.fields.getTextInputValue('pickem_forms_category');
+        const categoryResult = interaction.fields.getTextInputValue('pickem_result_category');
         const channelToSent = interaction.fields.getTextInputValue('pickem_setup_channel');
 
         // Check if channelToSent is valid
         const guild = interaction.guild!;
-        const errorEmbed = new EmbedBuilder()
-            .setTitle('Pickem | Error in Setup !')
-            .setColor(Colors.Red)
-            .setDescription('Invalid channel, retry again.');
 
         let channel = interaction.channel;
         if (channelToSent) {
-            const tchannel = guild.channels.cache.get(channelToSent);
+            const tchannel = await guild.channels.fetch(channelToSent);
 
-            if (!channel || channel.type !== ChannelType.GuildText) {
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-                return;
-            }
+            if (!channel || channel.type !== ChannelType.GuildText)
+                return await interaction.reply({ content: 'ERR L003 - An error occured, please try again.' });
+
 
             channel = tchannel as TextChannel;
         }
 
-        if (!channel) {
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-            return;
-        }
+        if (!channel)
+            return await interaction.reply({ content: 'ERR L004 - An error occured, please try again.' });
+
 
         // Check if categoryForm is valid
-        const category = guild.channels.cache.get(categoryForm);
+        const category = await guild.channels.fetch(categoryForm);
         // check if it's a category
-        if (!category || category.type !== ChannelType.GuildCategory) {
-            errorEmbed.setDescription('Invalid category, retry again.');
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
-            return;
-        }
+        if (!category || category.type !== ChannelType.GuildCategory || category.id !== categoryForm)
+            return await interaction.reply({ content: 'Not a valid category ID or this is NOT a category.' });
+
+
+        // Check if categoryResult is valid
+        const categoryRes = await guild.channels.fetch(categoryResult);
+        // check if it's a category
+        if (!categoryRes || categoryRes.type !== ChannelType.GuildCategory || categoryRes.id !== categoryResult)
+            return await interaction.reply({ content: 'Not a valid category ID or this is NOT a category.' });
+
 
         // Check if config already exist
         const config = await prisma.config.findFirst({
             where: {
-                guildId: guild.id,
+                id: 0,
             },
         });
 
+        let message = null;
         if (config) {
-            // If config is already set, clear the message.
-            await channel.messages.delete(config.formMessageId);
+            // If config is already set, update it
+            const target_channel = await guild.channels.fetch(config.formChannelId);
+            if (!target_channel || target_channel.type !== ChannelType.GuildText)
+                return await interaction.reply({ content: 'ERR L005 - An error occured, please try again.' });
+            const tmessage = await target_channel.messages.fetch(config.formMessageId);
+            if (!tmessage)
+                return await interaction.reply({ content: 'ERR L006 - An error occured, please try again.' });
+            if (channel.id === target_channel.id) {
+                // Update message
+                message = tmessage;
+            } else {
+                // Delete old message
+                await tmessage.delete();
+            }
         }
 
-        // Send message in the channel
-        const embed = new EmbedBuilder()
-            .setTitle('Pickem | Fill form !')
-            .setColor(Colors.Grey)
-            .setDescription('Click on the button to fill the form !');
+        const payload = SetupModalMessage();
 
-        if (!embed) {
-            errorEmbed.setDescription('An error occured, please try again.');
-            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        if (!payload) {
+            await interaction.reply({ content: 'ERR L007 - An error occured, please try again.' });
         }
 
-        const message = await channel.send({
-            embeds: [embed], components: [
+        const data = {
+            ...payload,
+            components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents(
-                    new FillFormButton().unwrap())
-            ]
-        });
+                    props.manager.Get('fill-form-button')!.unwrap())
+            ],
+        };
 
-        // Save config in database
-        prisma.config.upsert({
+        if (message) {
+            console.log('Editing: ' + message);
+            await interaction.deferUpdate();
+            message = await message.edit(data);
+        } else {
+            console.log('Sending/Interacting: ' + channel.id);
+            await interaction.deferUpdate();
+            message = await channel.send(data);
+        }
+
+        console.log(category.id, channel.id, message.id);
+
+        await prisma.config.upsert({
             where: {
-                id: 1,
-                guildId: guild.id,
+                id: 0,
             },
             update: {
                 formChannelId: channel.id,
-                formCategory: category.id,
+                formCategoryId: category.id,
                 formMessageId: message.id,
+                resultCategoryId: categoryRes.id,
             },
             create: {
-                guildId: guild.id,
                 formChannelId: channel.id,
-                formCategory: category.id,
+                formCategoryId: category.id,
                 formMessageId: message.id,
+                resultCategoryId: categoryRes.id,
             },
         });
     }
 
-}
+})

@@ -1,7 +1,7 @@
 [
     {
         "name": "Les victorieux de la semaine",
-        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "image": "victorieux_semaine.png",
         "questions": [
             {
                 "title": "Quelle équipe remportera la partie à la fin de la manche \"Le Duel\" ?",
@@ -30,22 +30,19 @@
     },
     {
         "name": "Le bon ordre",
-        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "image": "bon_ordre.png",
         "questions": [
             {
                 "title": "Classer du meilleur au moins bon, les 6 participants de la manche \"Le Duel\"  en matière de points marqués par les objectifs accomplis.",
                 "type": "select",
-                "choices": {
-                    "shuffle": true,
-                    "default": [
-                        "Joueur 1",
-                        "Joueur 2",
-                        "Joueur 3",
-                        "Joueur 4",
-                        "Joueur 5",
-                        "Joueur 6"
-                    ]
-                },
+                "choices": [
+                    "Joueur 1",
+                    "Joueur 2",
+                    "Joueur 3",
+                    "Joueur 4",
+                    "Joueur 5",
+                    "Joueur 6"
+                ],
                 "answers": [
                     "Joueur 1",
                     "Joueur 2",
@@ -57,13 +54,9 @@
             }
         ]
     },
-
-
-
-
     {
         "name": "Le tiercé gagnant",
-        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "image": "tierce_gagnant.png",
         "questions": [
             {
                 "title": "Classer du meilleur au moins bon, les 3 participants de la manche \"La Finale\"  en matière de points marqués par les objectifs accomplis. ",
@@ -71,14 +64,11 @@
                     {
                         "title": "Choisissez la Team.",
                         "type": "select",
-                        "choices": {
-                            "shuffle": true,
-                            "default": [
-                                "Equipe 1",
-                                "Equipe 2",
-                                "Equipe 3"
-                            ]
-                        },
+                        "choices": [
+                            "Equipe 1",
+                            "Equipe 2",
+                            "Equipe 3"
+                        ],
                         "answers": [
                             "Equipe 1"
                         ]
@@ -91,7 +81,6 @@
                             "rule": "key"
                         },
                         "choices": {
-                            "shuffle": true,
                             "Equipe 1": [
                                 "Joueur 1",
                                 "Joueur 2",
@@ -118,11 +107,9 @@
             }
         ]
     },
-
-
     {
         "name": "Le juste prix",
-        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "image": "juste_prix.png",
         "questions": [
             {
                 "title": "Trouver le nombre exact d'objectifs accomplis de chaque \"Tier\" lors de la manche \"Le Duel\".",
@@ -195,17 +182,13 @@
                     {
                         "title": "Numero Bleu Tier 1 - (0-11)",
                         "type": "text",
-                        "answers": [
-                            "0"
-                        ],
+                        "gen-answer": true,
                         "regex": "^[0-9]([0-1])?$"
                     },
                     {
                         "title": "Numero Bleu Tier 2 - (0-9)",
                         "type": "text",
-                        "answers": [
-                            "5"
-                        ],
+                        "gen-answer": true,
                         "regex": "^[0-9]$"
                     },
                     {
@@ -215,9 +198,7 @@
                             "index": 0,
                             "rule": "neq"
                         },
-                        "answers": [
-                            "0"
-                        ],
+                        "gen-answer": true,
                         "regex": "^[0-9]([0-1])?$"
                     },
                     {
@@ -227,53 +208,45 @@
                             "index": 1,
                             "rule": "neq"
                         },
-                        "answers": [
-                            "5"
-                        ],
+                        "gen-answer": true,
                         "regex": "^[0-9]$"
                     }
                 ]
             }
         ]
     },
-
-
-
     {
         "name": "La question bonus",
-        "image": "https://www.tf1.fr/tf1/les-12-coups-de-midi/news/12-coups-de-midi-les-victorie",
+        "image": "question_bonus.png",
         "questions": [
             {
-                "title": {
-                    "random": true,
-                    "choices": [
-                        {
-                            "cat": "cat_0",
-                            "key": "En combien de temps sera accompli le premier objectif de Tier 1 durant la manche \"Le Duel\" ?",
-                            "answer_index": 0
-                        },
-                        {
-                            "cat": "cat_0",
-                            "key": "En combien de temps sera accompli le premier objectif de Tier 2 durant la manche \"Le Duel\" ?",
-                            "answer_index": 1
-                        },
-                        {
-                            "cat": "cat_0",
-                            "key": "En combien de temps sera accompli le premier objectif de Tier 3 durant la manche \"Le Duel\" ?",
-                            "answer_index": 2
-                        },
-                        {
-                            "cat": "cat_0",
-                            "key": "En combien de temps sera accompli le premier objectif dans le Nether durant la manche \"Le Duel\" ?",
-                            "answer_index": 3
-                        },
-                        {
-                            "cat": "cat_0",
-                            "key": "En combien de temps sera accompli le premier objectif dans l’End durant la manche \"Le Duel\" ?",
-                            "answer_index": 4
-                        }
-                    ]
-                },
+                "title": [
+                    {
+                        "cat": "cat_0",
+                        "key": "En combien de temps sera accompli le premier objectif de Tier 1 durant la manche \"Le Duel\" ?",
+                        "answer_indexes": 0
+                    },
+                    {
+                        "cat": "cat_0",
+                        "key": "En combien de temps sera accompli le premier objectif de Tier 2 durant la manche \"Le Duel\" ?",
+                        "answer_indexes": 1
+                    },
+                    {
+                        "cat": "cat_0",
+                        "key": "En combien de temps sera accompli le premier objectif de Tier 3 durant la manche \"Le Duel\" ?",
+                        "answer_indexes": 2
+                    },
+                    {
+                        "cat": "cat_0",
+                        "key": "En combien de temps sera accompli le premier objectif dans le Nether durant la manche \"Le Duel\" ?",
+                        "answer_indexes": 3
+                    },
+                    {
+                        "cat": "cat_0",
+                        "key": "En combien de temps sera accompli le premier objectif dans l’End durant la manche \"Le Duel\" ?",
+                        "answer_indexes": 4
+                    }
+                ],
                 "type": "select",
                 "choices": {
                     "cat_0": [
