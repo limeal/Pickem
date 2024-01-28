@@ -6,17 +6,20 @@ import {
 import BaseInteraction from '../classes/BaseInteraction';
 import BaseButton from '../classes/BaseButton';
 import InteractionProps from '@interfaces/InteractionProps';
+import { FormQuestion, FormQuestionChoice } from '@prisma/client';
 import FormService from 'services/form.service';
 
-export default (props: InteractionProps) => new (class StartFormButton extends BaseButton implements BaseInteraction {
+export default (props: InteractionProps) => new (class FormQuestionButton extends BaseButton implements BaseInteraction {
 
     constructor() {
+
         super({
             customId: props.custom_id,
-            title: "Commencer",
-            style: ButtonStyle.Success,
-            emoji: '✅'
+            title: "Reload",
+            style: ButtonStyle.Primary,
+            emoji: '🔃'
         });
+
     }
 
     unwrap() {

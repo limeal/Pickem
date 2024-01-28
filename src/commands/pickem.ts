@@ -4,7 +4,7 @@ import {
     EmbedBuilder,
     Colors,
 } from 'discord.js';
-import { GetLeaderboard, GetUser } from 'services/user.service';
+import UserService from 'services/user.service';
 
 export default {
     data: new SlashCommandBuilder()
@@ -30,18 +30,23 @@ export default {
     execute: async (interaction: ChatInputCommandInteraction) => {
         switch (interaction.options.getSubcommand()) {
             case 'leaderboard':
-                const best_users = await GetLeaderboard();
+                const best_users = await UserService.Leaderboard();
 
                 const embed = new EmbedBuilder()
                     .setTitle('Leaderboard')
                     .setColor(Colors.Blue)
                     .setTimestamp(new Date())
 
-                for (let i = 0; i < best_users.length; i++) {
-                    embed.addFields({
-                        name: `${i + 1}. ${best_users[i].userId}`,
-                        value: `${best_users[i].score} points`
-                    })
+                if (best_users.length > 0) {
+                    for (let i = 0; i < best_users.length; i++) {
+                        const u = await interaction.guild?.members.fetch(best_users[i].userId);
+                        embed.addFields({
+                            name: `${i + 1}. ${u?.displayName}`,
+                            value: `${best_users[i].score} points`
+                        })
+                    }
+                } else {
+                    embed.setDescription('There are no users in the leaderboard');
                 }
 
                 interaction.reply({ embeds: [embed] });
@@ -50,11 +55,11 @@ export default {
             case 'score':
                 const user = interaction.options.getUser('user') || interaction.user;
                 try {
-                    const score = await GetUser(user);
-                
-                    interaction.reply({ content: `${user.username} has ${score} points.`, ephemeral: true });
+                    const score = await UserService.Get(user);
+
+                    interaction.reply({ content: `<@${user.id}> has ${score} points.`, ephemeral: true });
                 } catch (err: any) {
-                    interaction.reply({ content: err, ephemeral: true });
+                    interaction.reply({ content: `<@${user.id}> has not yet complete the form!`, ephemeral: true });
                 }
                 break;
             default:

@@ -12,6 +12,14 @@
                 ],
                 "answers": [
                     "Equipe 1"
+                ],
+                "coordinates": [
+                    {
+                        "x": 220,
+                        "y": 530,
+                        "width": 200,
+                        "height": 600
+                    }
                 ]
             },
             {
@@ -24,6 +32,14 @@
                 ],
                 "answers": [
                     "Joueur 1"
+                ],
+                "coordinates": [
+                    {
+                        "x": 690,
+                        "y": 530,
+                        "width": 200,
+                        "height": 600
+                    }
                 ]
             }
         ]
@@ -50,6 +66,44 @@
                     "Joueur 4",
                     "Joueur 5",
                     "Joueur 6"
+                ],
+                "coordinates": [
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    },
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    }
                 ]
             }
         ]
@@ -71,6 +125,14 @@
                         ],
                         "answers": [
                             "Equipe 1"
+                        ],
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 175,
+                                "height": 539
+                            }
                         ]
                     },
                     {
@@ -101,6 +163,26 @@
                             "Joueur 1",
                             "Joueur 2",
                             "Joueur 3"
+                        ],
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            },
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            },
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
                         ]
                     }
                 ]
@@ -117,26 +199,16 @@
                     {
                         "title": "Numero Bleu Tier 1 - (0-11)",
                         "type": "text",
-                        "answers": [
-                            "0"
-                        ],
-                        "regex": "^[0-9]([0-1])?$"
-                    },
-                    {
-                        "title": "Numero Bleu Tier 2 - (0-9)",
-                        "type": "text",
-                        "answers": [
-                            "5"
-                        ],
-                        "regex": "^[0-9]$"
-                    },
-                    {
-                        "title": "Numero Bleu Tier 3 - (0-5)",
-                        "type": "text",
-                        "answers": [
-                            "8"
-                        ],
-                        "regex": "^[0-5]$"
+                        "regex": "^([1-9]|1[01])$",
+                        "style": "primary",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
                     },
                     {
                         "title": "Numero Jaune Tier 1 - (0-11)",
@@ -145,34 +217,80 @@
                             "index": 0,
                             "rule": "neq"
                         },
-                        "answers": [
-                            "0"
-                        ],
-                        "regex": "^[0-9]([0-1])?$"
+                        "regex": "^([1-9]|1[01])$",
+                        "style": "secondary",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Numero Bleu Tier 2 - (0-9)",
+                        "type": "text",
+                        "regex": "^[0-9]$",
+                        "style": "primary",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
                     },
                     {
                         "title": "Numero Jaune Tier 2 - (0-9)",
                         "type": "text",
-                        "depend_on": {
-                            "index": 1,
-                            "rule": "neq"
-                        },
-                        "answers": [
-                            "5"
-                        ],
-                        "regex": "^[0-9]$"
-                    },
-                    {
-                        "title": "Numero Jaune Tier 3 - (0-5)",
-                        "type": "text",
+                        "style": "secondary",
                         "depend_on": {
                             "index": 2,
                             "rule": "neq"
                         },
-                        "answers": [
-                            "8"
-                        ],
-                        "regex": "^[0-5]$"
+                        "regex": "^[0-9]$",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Numero Bleu Tier 3 - (0-5)",
+                        "type": "text",
+                        "style": "primary",
+                        "regex": "^[0-5]$",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Numero Jaune Tier 3 - (0-5)",
+                        "type": "text",
+                        "style": "secondary",
+                        "depend_on": {
+                            "index": 4,
+                            "rule": "neq"
+                        },
+                        "regex": "^[0-5]$",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
                     }
                 ]
             },
@@ -182,34 +300,66 @@
                     {
                         "title": "Numero Bleu Tier 1 - (0-11)",
                         "type": "text",
-                        "gen-answer": true,
-                        "regex": "^[0-9]([0-1])?$"
-                    },
-                    {
-                        "title": "Numero Bleu Tier 2 - (0-9)",
-                        "type": "text",
-                        "gen-answer": true,
-                        "regex": "^[0-9]$"
+                        "regex": "^([1-9]|1[01])$",
+                        "style": "primary",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
                     },
                     {
                         "title": "Numero Jaune Tier 1 - (0-11)",
                         "type": "text",
+                        "style": "secondary",
                         "depend_on": {
                             "index": 0,
                             "rule": "neq"
                         },
-                        "gen-answer": true,
-                        "regex": "^[0-9]([0-1])?$"
+                        "regex": "^([1-9]|1[01])$",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Numero Bleu Tier 2 - (0-9)",
+                        "type": "text",
+                        "style": "primary",
+                        "regex": "^[0-9]$",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
                     },
                     {
                         "title": "Numero Jaune Tier 2 - (0-9)",
                         "type": "text",
+                        "style": "secondary",
                         "depend_on": {
-                            "index": 1,
+                            "index": 2,
                             "rule": "neq"
                         },
-                        "gen-answer": true,
-                        "regex": "^[0-9]$"
+                        "regex": "^[0-9]$",
+                        "coordinates": [
+                            {
+                                "x": 498,
+                                "y": 597,
+                                "width": 100,
+                                "height": 100
+                            }
+                        ]
                     }
                 ]
             }
@@ -220,33 +370,30 @@
         "image": "question_bonus.png",
         "questions": [
             {
-                "title": [
-                    {
-                        "cat": "cat_0",
-                        "key": "En combien de temps sera accompli le premier objectif de Tier 1 durant la manche \"Le Duel\" ?",
-                        "answer_indexes": 0
-                    },
-                    {
-                        "cat": "cat_0",
-                        "key": "En combien de temps sera accompli le premier objectif de Tier 2 durant la manche \"Le Duel\" ?",
-                        "answer_indexes": 1
-                    },
-                    {
-                        "cat": "cat_0",
-                        "key": "En combien de temps sera accompli le premier objectif de Tier 3 durant la manche \"Le Duel\" ?",
-                        "answer_indexes": 2
-                    },
-                    {
-                        "cat": "cat_0",
-                        "key": "En combien de temps sera accompli le premier objectif dans le Nether durant la manche \"Le Duel\" ?",
-                        "answer_indexes": 3
-                    },
-                    {
-                        "cat": "cat_0",
-                        "key": "En combien de temps sera accompli le premier objectif dans l’End durant la manche \"Le Duel\" ?",
-                        "answer_indexes": 4
-                    }
-                ],
+                "title": {
+                    "cat_0": [
+                        {
+                            "title": "En combien de temps sera accompli le premier objectif de Tier 1 durant la manche \"Le Duel\" ?",
+                            "index": 0
+                        },
+                        {
+                            "title": "En combien de temps sera accompli le premier objectif de Tier 2 durant la manche \"Le Duel\" ?",
+                            "index": 1
+                        },
+                        {
+                            "title": "En combien de temps sera accompli le premier objectif de Tier 3 durant la manche \"Le Duel\" ?",
+                            "index": 2
+                        },
+                        {
+                            "title": "En combien de temps sera accompli le premier objectif dans le Nether durant la manche \"Le Duel\" ?",
+                            "index": 3
+                        },
+                        {
+                            "title": "En combien de temps sera accompli le premier objectif dans l’End durant la manche \"Le Duel\" ?",
+                            "index": 4
+                        }
+                    ]
+                },
                 "type": "select",
                 "choices": {
                     "cat_0": [
@@ -445,7 +592,15 @@
                         "46 à 50 Morts",
                         "Plus de 50 Morts"
                     ]
-                }
+                },
+                "coordinates": [
+                    {
+                        "x": 498,
+                        "y": 597,
+                        "width": 100,
+                        "height": 100
+                    }
+                ]
             }
         ]
     }

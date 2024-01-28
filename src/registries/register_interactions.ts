@@ -12,16 +12,19 @@ import path from 'path';
 //////////////////////////
 
 const interactionManager = new InteractionManager();
-const interactionFiles = fs.readdirSync(path.join(__dirname, '../interactions')).filter(file => file.endsWith('.ts'));
+
+const Init = () => {
+    const interactionFiles = fs.readdirSync(path.join(__dirname, '../interactions')).filter(file => file.endsWith('.ts'));
 
 
-for (const file of interactionFiles) {
-    console.log(`Loading interaction ${file}`);
-    const Interaction: (props: InteractionProps) => BaseInteraction = require(path.join(__dirname, '../interactions', file)).default;
-    interactionManager.Set(file.split('.')[0], Interaction);
+    for (const file of interactionFiles) {
+        console.log(`Loading interaction ${file}`);
+        const Interaction: (props: InteractionProps) => BaseInteraction = require(path.join(__dirname, '../interactions', file)).default;
+        interactionManager.Set(file.split('.')[0], Interaction);
+    }
+
+    console.log(`Loaded ${interactionManager.interactions.size} interactions`);
+    console.log(interactionManager.interactions.keys());
 }
 
-console.log(`Loaded ${interactionManager.interactions.size} interactions`);
-console.log(interactionManager.interactions.keys());
-
-export default interactionManager;
+export { Init, interactionManager };

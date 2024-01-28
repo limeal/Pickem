@@ -25,7 +25,6 @@ export default class BaseModal {
             .setCustomId(partialModal.customId)
             .setTitle(partialModal.title);
 
-        console.log(partialInputs);
         this.inputs = partialInputs.map(input => new TextInputBuilder()
             .setCustomId(input.customId)
             .setLabel(input.label)

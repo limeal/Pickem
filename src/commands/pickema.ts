@@ -5,12 +5,15 @@ import {
 } from 'discord.js';
 import cron from 'node-cron';
 
+import prisma from '../prisma';
+import FormService from '../services/form.service';
+import UserService from 'services/user.service';
+
 // Import interactions
-import SetupModal from 'interactions/setup-modal';
-import { CreateForm, ChangeForm, DeleteForm, GetForms } from '../services/form.service';
-import interactions from 'registries/register_interactions';
-import prisma from 'prisma';
-import { ResetUser } from 'services/user.service';
+import { interactionManager } from 'registries/register_interactions';
+import ListFormsMessage from 'messages/ListFormsMessage';
+import tasks from 'registries/register_tasks';
+import ResultService from 'services/result.service';
 
 export default {
     data: new SlashCommandBuilder()
@@ -29,8 +32,8 @@ export default {
                 )
                 .addStringOption(option =>
                     option
-                        .setName('question_file')
-                        .setDescription('The name of json file with questions located in TEMPLATE_FOLDER.')
+                        .setName('file_loc')
+                        .setDescription(`The file_loc of the pickem (default: 'default')`)
                         .setRequired(false)
                 )
         )
@@ -43,10 +46,10 @@ export default {
             subcommand
                 .setName('program')
                 .setDescription('Program a pickem.')
-                .addIntegerOption(option =>
+                .addStringOption(option =>
                     option
-                        .setName('id')
-                        .setDescription('The name of the pickem')
+                        .setName('name')
+                        .setDescription('The name of the pickem.')
                         .setRequired(true)
                 )
                 .addStringOption(option =>
@@ -58,12 +61,23 @@ export default {
         )
         .addSubcommand(subcommand =>
             subcommand
+                .setName('unprogram')
+                .setDescription('Unprogram a pickem.')
+                .addStringOption(option =>
+                    option
+                        .setName('name')
+                        .setDescription('The name of the pickem.')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('delete')
                 .setDescription('Delete a pickem.')
-                .addIntegerOption(option =>
+                .addStringOption(option =>
                     option
-                        .setName('id')
-                        .setDescription('The id of pickem.')
+                        .setName('name')
+                        .setDescription('The name of the pickem.')
                         .setRequired(true)
                 )
         )
@@ -71,10 +85,10 @@ export default {
             subcommand
                 .setName('set')
                 .setDescription('Set a new pickem.')
-                .addIntegerOption(option =>
+                .addStringOption(option =>
                     option
-                        .setName('id')
-                        .setDescription('The id of pickem.')
+                        .setName('name')
+                        .setDescription('The name of the pickem.')
                         .setRequired(true)
                 )
         )
@@ -94,56 +108,72 @@ export default {
                         .setRequired(false)
                 )
         )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('misc')
+                .setDescription('Misc command')
+                .addUserOption(option => option
+                    .setName('gen-result')
+                    .setDescription('Regen the result of a pickem for user.')
+                    .setRequired(true)
+                )
+        )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
         switch (interaction.options.getSubcommand()) {
             case 'new':
                 const name = interaction.options.getString('name');
-                const qFile = interaction.options.getString('question_file') || 'default';
+                const qFile = interaction.options.getString('file_loc') || 'default';
 
                 try {
-                    const pickem = await CreateForm(name!, qFile!, interaction.guildId!);
-                    return await interaction.reply(`Created a new pickem with id: ${pickem.id}`);
+                    const pickem = await FormService.Create(name!, qFile!, interaction.guildId!);
+                    return interaction.reply({ content: `Created a new pickem with id: ${pickem.id}`, ephemeral: true });
                 } catch (error: any) {
-                    console.log(error);
-                    return await interaction.reply('Error creating new pickem.');
+                    return await interaction.reply({ content: `Pickem with name ${name}, already exist or occur an error in creation process.`, ephemeral: true });
                 }
             case 'list':
-                const forms = await GetForms();
-                if (forms.length === 0) return await interaction.reply('No forms found.');
-                return await interaction.reply(`Existing Forms: ${forms.map((form: any) => form.title + (form.active ? ' (active)' : '')).join(', ')}`);
+                const forms = await FormService.GetAll();
+                if (forms.length === 0) return await interaction.reply('No Pickem found, use /pickema new <name>');
+                return await interaction.reply(ListFormsMessage(forms));
             case 'delete':
-                const id = interaction.options.getInteger('id');
-                await DeleteForm(id!);
-                return await interaction.reply(`Deleted form with id: ${id}`);
+                const name2 = interaction.options.getString('name');
+                try {
+                    await FormService.Delete(name2!);
+                    return await interaction.reply({ content: `Deleted pickem with name: ${name2}`, ephemeral: true });
+                } catch (error: any) {
+                    return await interaction.reply({ content: `Pickem with name ${name2}, does not exist.`, ephemeral: true });
+                }
             case 'set':
-                const id2 = interaction.options.getInteger('id');
-                await ChangeForm(id2!, interaction.guild!);
-                return await interaction.reply(`Activated form with id: ${id2}`);
+                const name3 = interaction.options.getString('name');
+                try {
+                    await FormService.Switch(name3!, interaction.guild!);
+                    return await interaction.reply({ content: `Activate pickem with name ${name3}`, ephemeral: true });
+                } catch (error: any) {
+                    return await interaction.reply({ content: `Pickem with name ${name3}, does not exist.`, ephemeral: true });
+                }
             case 'setup':
-                return await interaction.showModal(interactions.Get('setup-modal')!.unwrap());
+                return await interaction.showModal(interactionManager.Get('setup-modal')!.unwrap());
             case 'reset':
                 const user = interaction.options.getUser('user') || interaction.user;
                 try {
-                    await ResetUser(user, interaction.guild!);
-                    return await interaction.reply(`The user ${user.username} has been reset.`);
+                    await UserService.Reset(user, interaction.guild!);
+                    return await interaction.reply({ content: `Reset user ${user.username} response in pickem`, ephemeral: true });
                 } catch (error: any) {
-                    console.log(error);
-                    return await interaction.reply('Error reseting user.');
+                    return await interaction.reply({ content: `An error occurred while resetting user ${user.username} response in pickem`, ephemeral: true });
                 }
             case 'program':
                 // Create a repetitive task
-                const id3 = interaction.options.getInteger('id');
+                const name4 = interaction.options.getString('name');
                 const cronj = interaction.options.getString('cron');
 
                 try {
                     const form = await prisma.form.findUnique({
                         where: {
-                            id: id3!,
+                            title: name4!,
                         },
                     });
 
-                    if (!form) throw 'Invalid form id';
+                    if (!form) throw 'Invalid form';
 
                     await prisma.formCron.create({
                         data: {
@@ -152,16 +182,38 @@ export default {
                         },
                     });
 
-                    cron.schedule(cronj!, async () => {
-                        ChangeForm(form.id, interaction.guild!);
+                    tasks.set(form.title, cron.schedule(cronj!, async () => {
+                        FormService.Switch(form.title, interaction.guild!);
+                    }));
+
+
+                    return await interaction.reply({ content: `Programmed pickem with name ${name4}`, ephemeral: true });
+                } catch (error: any) {
+                    return await interaction.reply({ content: `An error occurred while programming pickem with name ${name4}`, ephemeral: true });
+                }
+            case 'unprogram':
+                const name5 = interaction.options.getString('name');
+
+                const task = tasks.get(name5!);
+                if (!task) return await interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
+                task.stop();
+                return await interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
+            case 'misc':
+                const genResultUser = interaction.options.getUser('gen-result');
+                if (genResultUser) {
+                    const userResponse = await prisma.userResponse.findUnique({
+                        where: {
+                            userId: genResultUser.id,
+                        },
+                        include: {
+                            submissions: true,
+                        },
                     });
 
-                    return await interaction.reply(`Programmed form with id: ${id3}`);
-                } catch (error: any) {
-                    console.log(error);
-                    return await interaction.reply('L020 - An error occured, please contact an admin.');
-                }
+                    if (!userResponse) return await interaction.reply({ content: `User ${genResultUser.username} does not have a response.`, ephemeral: true });
 
+                    return await ResultService.Create(interaction, genResultUser, userResponse!, userResponse!.submissions);
+                }
                 break;
             default:
                 break;

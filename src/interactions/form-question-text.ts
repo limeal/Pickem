@@ -2,7 +2,10 @@ import {
     ActionRowBuilder,
     AnySelectMenuInteraction,
     ButtonBuilder,
-    Collection
+    Collection,
+    Message,
+    ModalSubmitInteraction,
+    TextInputStyle
 } from 'discord.js';
 
 import BaseInteraction from '../classes/BaseInteraction';
@@ -10,46 +13,54 @@ import BaseSelect from 'classes/BaseSelect';
 import prisma from 'prisma';
 import InteractionProps from '@interfaces/InteractionProps';
 import { FormQuestion, FormQuestionChoice, UserSubmission } from '@prisma/client';
+import BaseModal from 'classes/BaseModal';
 import FormService from 'services/form.service';
 import SubmitQuestionMessage from 'messages/SubmitQuestionMessage';
-import ReloadQuestionButton from './reload-question-button';
 
-export default (props: InteractionProps) => new (class FormQuestionSelect extends BaseSelect implements BaseInteraction {
-    question: (FormQuestion & {
+export default (props: InteractionProps) => new (class FormQuestionText extends BaseModal implements BaseInteraction {
+    private question: (FormQuestion & {
         choices: FormQuestionChoice[];
     });
+    private message: Message;
 
     constructor() {
         const question = props.params.get('question') as (FormQuestion & { choices: FormQuestionChoice[] });
-        const last_submissions = props.params.get('last_submissions') as UserSubmission[];
+        const message = props.params.get('message') as Message;
 
-        let qChoices: string[] = [];
-        if (question?.linkedId) {
-            const linked = last_submissions.find(s => s.questionId === question.linkedId);
-            if (!linked) throw new Error('Invalid linked question !');
-            console.log('Linked', linked.answers[0]);
-            qChoices = question.choices.find(c => c.category === linked.answers[0])?.values || [];
-        } else
-            qChoices = question?.choices.find(c => c.category === 'default')?.values || [];
+        super({
+            customId: props.custom_id,
+            title: question?.title || 'Question',
+        }, [
+            {
+                customId: 'form_question_answer',
+                label: "Votre réponse",
+                placeholder: question?.title || 'Question',
+                style: TextInputStyle.Short,
+                required: true
+            }
+        ]);
 
-
-        super(props.custom_id, 'STRING', question?.answers?.length, question?.answers?.length, qChoices);
         this.question = { ...question };
+        this.message = message;
     }
 
     unwrap() {
-        return this.select;
+        return this.modal;
     }
 
-    async execute(interaction: AnySelectMenuInteraction) {
+    async execute(interaction: ModalSubmitInteraction) {
 
         // Get content selected by the interaction
-        const values = interaction.values;
+        const answer = interaction.fields.getTextInputValue('form_question_answer');
+
+        // Check if answer match the regex
+        if (!answer.match(this.question.regex))
+            return await interaction.reply({ content: 'ERR L001 - Invalid answer, please retry.' })
 
         // Check if values is the same as answers
         let count = 0;
         for (let i = 0; i < this.question.answers.length; i++) {
-            count += (this.question?.answers[i].toUpperCase() === values[i].toUpperCase().replace('_', ' ') ? 1 : 0)
+            count += (this.question?.answers[i].toUpperCase() === answer.toUpperCase().replace('_', ' ') ? 1 : 0)
         }
 
         try {
@@ -75,28 +86,24 @@ export default (props: InteractionProps) => new (class FormQuestionSelect extend
                 data: {
                     questionId: this.question.id,
                     userRespId: userResponse.id,
-                    messageId: interaction.message.id,
-                    answers: values,
+                    messageId: interaction.message?.id,
+                    answers: [answer],
                     done: true
                 }
             })
 
             // Remove component from message
-            await interaction.message.edit(SubmitQuestionMessage(this.question.title, values));
+            await this.message.edit(SubmitQuestionMessage(this.question.title, [answer]));
 
             // If not we just update the question index, if it's the last question, we end the form, if not we send the next question
-            return await FormService.InvokeNextQuestion({
-                interaction,
-                imanager: props.manager,
-                user: interaction.user,
-            });
+            return await FormService.InvokeNextQuestion({ interaction, imanager: props.manager, user: interaction.user });
         } catch (error: any) {
-            await interaction.message.edit({
+            await this.message.edit({
                 components: [
                     new ActionRowBuilder<ButtonBuilder>().addComponents(
                         props.manager.Get('reload-question-button')!.unwrap())
-                    ]
-                });
+                ]
+            });
             return await interaction.reply({
                 content: 'An error occured, please try again by clicking on the button below.',
                 ephemeral: true,

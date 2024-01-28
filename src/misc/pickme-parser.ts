@@ -1,142 +1,201 @@
-import RandExp from 'randexp';
 import prisma from '../prisma';
-import { ICategory, IQuestion, IAnswer } from '../interfaces';
-import ICoord from '@interfaces/ICoord';
+import { ICategory, IQuestion } from '../interfaces';
+import { FormQuestion, FormQuestionChoice, FormQuestionCoord, FormQuestionLinkType, FormQuestionType } from '@prisma/client';
+import { Collection } from 'discord.js';
+import RandExp from 'randexp';
 
 const createQuestion = async (
     formId: number,
     categoryId: number,
     question: IQuestion,
     parentId?: number,
-    lasts?: IQuestion[],
+    lasts?: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] })[],
 ) => {
-    const { title, type, depend_on, regex, choices, answers, coordinates, parts } = question;
+    let { title, type, depend_on, regex, style, choices, answers, coordinates, parts } = question;
     console.log('Creating question', question);
 
     let qTitle = '';
-    let qAIdxs: number[] = [];
+    let qAIdx: number = -1;
     let cKey: string = '';
-    let qChoices: string[] = [];
+    let qChoices: Map<string, string[]> = new Map<string, string[]>([]);
     let qAnswers: string[] = [];
-    let spRule = '';
+    let qLink: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] }) | undefined = undefined;
+    let qLinkType: FormQuestionLinkType = FormQuestionLinkType.NONE;
+    let qType: FormQuestionType = FormQuestionType.MULTIPART;
+
+    switch (type) {
+        case 'text':
+            qType = FormQuestionType.TEXT;
+            break;
+        case 'select':
+            qType = FormQuestionType.SELECT;
+            break;
+        case 'button':
+            qType = FormQuestionType.BUTTON;
+            break;
+        default:
+            break;
+    }
 
     if (typeof title === 'string') {
         qTitle = title;
-    } else if (Array.isArray(title)) {
-        // Choose random title from array
-        const c = title[Math.floor(Math.random() * title.length)];
-        if (typeof c === 'string') {
-            qTitle = c;
-        } else {
-            cKey = c.cat;
-            qTitle = c.key;
-            qAIdxs = typeof c.answer_indexes === 'number' ? [c.answer_indexes] : c.answer_indexes;
-        }
+    } else {
+        // Choose random category from keys of the object
+        const categories = Object.keys(title);
+        cKey = categories[Math.floor(Math.random() * categories.length)];
+
+        // Choose random question from the category
+        const randomQ = title[cKey][Math.floor(Math.random() * title[cKey].length)];
+        qAIdx = randomQ.index;
+        qTitle = randomQ.title;
     }
 
-    if (!parts && (!type || !answers))
+    if (!parts && !type)
         throw new Error('Type or regex does not exist');
 
     if (lasts?.length && depend_on) {
-        const rule = depend_on.rule;
+        if (!lasts[depend_on.index]) throw new Error('Invalid Depency on question !');
+        qLink = lasts[depend_on.index];
 
-        switch (rule) {
+        switch (depend_on.rule) {
             case 'key':
-                const last = lasts[depend_on.index];
-                if (!Array.isArray(last.answers))
-                    throw new Error('Depend question is not a string array');
-                if (last.answers.length > 1)
-                    throw new Error('Depend question has more than 1 answer');
-                if (cKey)
-                    throw new Error('Depend on \'key\' cannot be used when \'title\' use \'answer_index\'');
-                cKey = last.answers[0];
+                if (cKey) throw new Error('Title must be string to use depend_on with key');
+                qLinkType = FormQuestionLinkType.TAKE_ANSWER;
+                break;
+            case 'neq':
+                qLinkType = FormQuestionLinkType.NOT_EQUAL;
                 break;
             default:
-                spRule = depend_on.rule + ' ' + depend_on.index;
-                break;
+                throw new Error('Invalid Question Link Rule !');
         }
     }
 
-    if (type === 'select') {
-        if (!choices?.length)
-            throw new Error('Choices does not exist');
-        if (cKey.length && Array.isArray(choices))
-            throw new Error('Choices must be an object');
-        if (!cKey.length && !Array.isArray(choices))
-            throw new Error('Choices must be an array');
-
-        if (Array.isArray(choices)) {
-            qChoices = choices;
+    if (qType === FormQuestionType.SELECT) {
+        if (!choices) throw new Error('Choices does not exist');
+        if (cKey && !Array.isArray(choices)) choices = choices[cKey];
+        if (qLink && qLinkType === FormQuestionLinkType.TAKE_ANSWER) {
+            if (Array.isArray(choices)) throw new Error('Choices must be an object to use depend_on with key');
+            console.log('QLink', qLink);
+            switch (qLink.type) {
+                case FormQuestionType.SELECT:
+                    if (qLink.choices.length !== 1) throw new Error('Choices must have only one category');
+                    const values = qLink.choices[0].values;
+                    for (const link_value of values)
+                        qChoices.set(link_value.toLowerCase().replace(/ /g, '_'), choices[link_value]);
+                    break;
+                default:
+                    throw new Error('Depend_on can only be used with select question');
+            }
         } else {
-            qChoices = choices[cKey];
-        }
-
-        // Shuffle choices
-        qChoices = qChoices.sort(() => Math.random() - 0.5);
-    }
-
-    if (answers?.length) {
-        if (qAIdxs.length && Array.isArray(answers))
-            throw new Error('Answers must be an object');
-        if (!qAIdxs.length && !Array.isArray(answers))
-            throw new Error('Answers must be an array');
-
-        if (Array.isArray(answers)) {
-            qAnswers = answers;
-        } else {
-            qAnswers = answers[cKey];
-            // Pick only the answers that are needed qAIdxs
-            qAnswers = qAnswers.filter((_, idx) => qAIdxs.includes(idx));
+            if (!choices || !Array.isArray(choices)) throw new Error('Answers does not exist / Must be an array');
+            if (!choices?.length) throw new Error('Choices does not exist');
+            // Shuffle choices
+            qChoices.set('default', choices.sort(() => Math.random() - 0.5));
         }
     }
 
+    if (answers) {
+        if (cKey && !Array.isArray(answers)) answers = answers[cKey];
+        if (!answers || !Array.isArray(answers)) throw new Error('Answers does not exist / Must be an array');
+        qAnswers = answers;
+        if (qAIdx >= 0) {
+            const answer = qAnswers[qAIdx];
+            if (!answer) throw new Error('Answer does not exist');
+            qAnswers = [answer];
+        }
+    } else {
+        if (qType === FormQuestionType.TEXT) {
+            let gen = "0";
+            do {
+                gen = new RandExp(regex || '.*').gen();
+                qAnswers = [gen];
+            } while (qLink && qLinkType === FormQuestionLinkType.NOT_EQUAL && qLink.answers.includes(gen));
+        } else if (!parts) throw new Error('Parts does not exist');
+    }
+
+    if (coordinates && qAnswers.length !== coordinates.length) throw new Error('Answers and coordinates must have the same length');
+
+    let choices_ids: number[] = [];
+    let coords_ids: number[] = [];
+    try {
+        console.log('Choices', qChoices);
+        for (const [key, value] of qChoices) {
+            console.log(key, value);
+            const elem = await prisma.formQuestionChoice.create({
+                data: {
+                    category: key,
+                    values: value,
+                }
+            });
+            choices_ids.push(elem.id);
+        }
+
+        if (coordinates) {
+            for (const coord of coordinates) {
+                const elem = await prisma.formQuestionCoord.create({
+                    data: {
+                        x: coord.x,
+                        y: coord.y,
+                        width: coord.width,
+                        height: coord.height,
+                    },
+                })
+                coords_ids.push(elem.id);
+            }
+        }
+    } catch (error) {
+
+        // Delete choices
+        if (choices_ids && choices_ids.length > 0) {
+            await prisma.formQuestionChoice.deleteMany({
+                where: { id: { in: choices_ids } }
+            })
+        }
+
+        // Delete coordinates
+        if (coords_ids && coords_ids.length > 0) {
+            await prisma.formQuestionCoord.deleteMany({
+                where: { id: { in: coords_ids } }
+            })
+        }
+
+        throw error;
+    }
 
     const new_question = await prisma.formQuestion.create({
         data: {
             formId,
             categoryId,
-            type,
+            parentId: parentId ?? null,
+            linkType: qLinkType,
+            linkedId: qLink?.id ?? null,
+            type: qType,
             title: qTitle,
+            style,
             regex,
-            spRegex: spRule,
-            choices: qChoices,
-            answers: qAnswers
+            answers: qAnswers,
+            choices: {
+                connect: choices_ids.map(id => ({ id })),
+            },
+            coordinates: {
+                connect: coords_ids.map(id => ({ id })),
+            }
         },
         include: {
+            choices: true,
             coordinates: true,
         }
     });
 
-    try {
-        for (const coord of coordinates) {
-            await prisma.formQuestionCoord.create({
-                data: {
-                    questionId: new_question.id,
-                    x: coord.x,
-                    y: coord.y,
-                    width: coord.width,
-                    height: coord.height,
-                },
-            })
-        }
-    } catch (error) {
-
-        await prisma.formQuestion.delete({
-            where: {
-                id: new_question.id,
-            },
-        });
-
-        throw error;
-    }
 
     if (parts) {
-        let lasts: IQuestion[] = [];
+        let lasts: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] })[] = [];
         for (const part of parts) {
             lasts.push(await createQuestion(formId, categoryId, part, new_question.id, lasts));
         }
     }
 
+    console.log('Result question', new_question);
     return new_question;
 }
 
@@ -160,12 +219,6 @@ export default async (formId: number, data: ICategory[]) => {
                 await createQuestion(formId, new_category.id, question);
 
         } catch (error) {
-            // Delete category if error
-            await prisma.formCategory.delete({
-                where: {
-                    id: new_category.id,
-                },
-            });
             throw error;
         }
     }

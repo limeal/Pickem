@@ -2,26 +2,13 @@
 import path from 'path';
 import fs from 'fs';
 import { Collection, REST, Routes, SlashCommandBuilder } from 'discord.js';
+import commands from 'registries/register_commands';
 import dotenv from 'dotenv';
 dotenv.config();
-
-interface Command {
-    data: SlashCommandBuilder;
-    execute: (interaction: any) => Promise<void>;
-}
 
 (async () => {
 
     const rest = new REST().setToken(process.env.DISCORD_BOT_TOKEN || '');
-
-    const commands = new Collection<string, Command>();
-
-    const commandFiles = fs.readdirSync(path.join(__dirname, '../commands')).filter(file => file.endsWith('.ts'));
-
-    for (const file of commandFiles) {
-        const command: Command = require(path.join(__dirname, '../commands', file)).default;
-        commands.set(command.data.name, command);
-    }
 
     console.log(`Found ${commands.size} application (/) commands.`);
 

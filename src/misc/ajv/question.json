@@ -9,25 +9,20 @@
                 },
                 {
                     "type": "object",
-                    "properties": {
-                        "cat": {
-                            "type": "string"
-                        },
-                        "key": {
-                            "type": "string"
-                        },
-                        "answer_indexes": {
-                            "anyOf": [
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "array",
-                                    "items": {
+                    "patternProperties": {
+                        ".*": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "index": {
                                         "type": "number"
                                     }
                                 }
-                            ]
+                            }
                         }
                     }
                 }
@@ -52,14 +47,15 @@
                     "type": "string",
                     "enum": [
                         "key",
-                        "!=",
-                        "==",
-                        ">"
+                        "neq"
                     ]
                 }
             }
         },
         "regex": {
+            "type": "string"
+        },
+        "style": {
             "type": "string"
         },
         "choices": {
@@ -121,7 +117,14 @@
         {
             "required": [
                 "title",
-                "parts",
+                "parts"
+            ]
+        },
+        {
+            "required": [
+                "title",
+                "type",
+                "regex",
                 "coordinates"
             ]
         },

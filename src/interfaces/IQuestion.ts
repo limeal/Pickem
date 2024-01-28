@@ -1,22 +1,25 @@
+import { FormQuestionType } from "@prisma/client";
 import ICoord from "./ICoord";
-import IAnswer from "./ICoord";
 
 interface IQuestion {
+    id?: number;
     title: string | {
-        cat: string;
-        key: string;
-        answer_indexes: number | number[];
-    }[];
+        [key: string]: {
+            title: string;
+            index: number;
+        }[];
+    };
     type?: string;
     depend_on?: {
         index: number;
         rule: string;
     };
     regex?: string;
+    style?: string;
     choices?: string[] | {
         [key: string]: string[];
     };
-    answers: string[] | {
+    answers?: string[] | {
         [key: string]: string[];
     };
     coordinates: ICoord[];

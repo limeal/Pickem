@@ -19,7 +19,7 @@ model Config {
 
 model Form {
     id         Int            @id @default(autoincrement())
-    title      String         @default("")
+    title      String         @unique
     active     Boolean        @default(false)
     responses  UserResponse[]
     createdAt  DateTime       @default(now())
@@ -28,7 +28,7 @@ model Form {
     categories FormCategory[] @relation("FormCategory")
 
     // Ignored
-    FormCron FormCron?
+    cron FormCron?
 }
 
 model FormCron {
@@ -55,8 +55,8 @@ model FormCategory {
 model FormQuestionCoord {
     id Int @id @default(autoincrement())
 
-    FormQuestion FormQuestion @relation("FormQuestionCoord", fields: [questionId], references: [id])
-    questionId   Int
+    FormQuestion FormQuestion? @relation("FormQuestionCoord", fields: [questionId], references: [id], onDelete: Cascade)
+    questionId   Int?
 
     x      Int @default(0)
     y      Int @default(0)
@@ -67,44 +67,86 @@ model FormQuestionCoord {
     updatedAt DateTime @updatedAt
 }
 
+model FormQuestionChoice {
+    id         Int           @id @default(autoincrement())
+    category   String        @default("default")
+    questionId Int?
+    question   FormQuestion? @relation("FormChoices", fields: [questionId], references: [id], onDelete: Cascade)
+    values     String[]
+    createdAt  DateTime      @default(now())
+    updatedAt  DateTime      @updatedAt
+}
+
+enum FormQuestionLinkType {
+    NONE
+    NOT_EQUAL
+    TAKE_ANSWER
+}
+
+enum FormQuestionType {
+    MULTIPART
+    TEXT
+    SELECT
+    BUTTON
+}
+
 model FormQuestion {
-    id             Int            @id @default(autoincrement())
+    id             Int              @id @default(autoincrement())
     formId         Int
-    form           Form           @relation("FormQuestion", fields: [formId], references: [id], onDelete: Cascade)
+    form           Form             @relation("FormQuestion", fields: [formId], references: [id], onDelete: Cascade)
     categoryId     Int
-    category       FormCategory   @relation("FormCategory", fields: [categoryId], references: [id], onDelete: Cascade)
+    category       FormCategory     @relation("FormCategory", fields: [categoryId], references: [id], onDelete: Cascade)
     parentId       Int?
-    parentQuestion FormQuestion?  @relation("SubQuestions", fields: [parentId], references: [id])
-    questions      FormQuestion[] @relation("SubQuestions")
+    parentQuestion FormQuestion?    @relation("SubQuestions", fields: [parentId], references: [id])
+    questions      FormQuestion[]   @relation("SubQuestions")
     // Type must been type of interaction: select, button
-    type           String         @default("")
-    title          String         @default("")
-    regex          String         @default("") // Regex to validate the answer
-    spRegex        String         @default("") // SP Regex (!=, >, <, >=, <=)
-    choices        String[]
-    answers        String[] // Answers of the question
-    createdAt      DateTime       @default(now())
-    updatedAt      DateTime       @updatedAt
+    type           FormQuestionType @default(TEXT)
+    title          String           @default("")
+    regex          String           @default("") // Regex to validate the answer
+    style          String           @default("") // Color of the question
+
+    // Link to another question
+    linkType FormQuestionLinkType @default(NONE) // Link type of the question
+    linkedId Int?
+    linked   FormQuestion?        @relation("LinkedQuestions", fields: [linkedId], references: [id])
+
+    choices   FormQuestionChoice[] @relation("FormChoices")
+    answers   String[] // Answers of the question
+    createdAt DateTime             @default(now())
+    updatedAt DateTime             @updatedAt
 
     coordinates FormQuestionCoord[] @relation("FormQuestionCoord")
+
     // Ignored
     submissions UserSubmission[]
+    links       FormQuestion[]   @relation("LinkedQuestions")
+}
+
+enum UserResponseStatus {
+    PENDING
+    COMPLETED
 }
 
 model UserResponse {
-    id            Int              @id @default(autoincrement())
-    formId        Int              @default(0) // Form id where the user has answered
-    form          Form             @relation(fields: [formId], references: [id], onDelete: Cascade)
-    categoryId    Int?
-    category      FormCategory?    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-    submissions   UserSubmission[]
-    userId        String           @unique
-    channelId     String           @default("") // Channel id where the user is completing the form
-    respChannelId String           @default("") // Channel id where the user has the answer of the sform
-    status        String           @default("pending") // pending, completed
-    score         Int              @default(0) // Score of the user 1 point per correct answer
-    createdAt     DateTime         @default(now())
-    updatedAt     DateTime         @updatedAt
+    id         Int           @id @default(autoincrement())
+    formId     Int           @default(0) // Form id where the user has answered
+    form       Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
+    categoryId Int?
+    category   FormCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+    nextIndex   Int              @default(0) // Index of the next question to answer
+    submissions UserSubmission[]
+
+    userId        String             @unique
+    channelId     String             @default("") // Channel id where the user is completing the form
+
+    respChannelId String             @default("") // Channel id where the user has the answer of the sform
+    respMessageId String             @default("") // Message id where the user has the answer of the sform
+
+    status        UserResponseStatus @default(PENDING) // pending, completed
+    score         Int                @default(0) // Score of the user 1 point per correct answer
+    createdAt     DateTime           @default(now())
+    updatedAt     DateTime           @updatedAt
 }
 
 model UserSubmission {
@@ -113,6 +155,7 @@ model UserSubmission {
     userResp   UserResponse @relation(fields: [userRespId], references: [id], onDelete: Cascade)
     questionId Int // Question id where the user has answered
     question   FormQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    messageId  String       @default("") // Message id where the user has answered
     answers    String[] // Answer of the user
     done       Boolean      @default(false) // If the user has answered the question with all the subquestions
     createdAt  DateTime     @default(now())

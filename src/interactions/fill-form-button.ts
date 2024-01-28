@@ -14,6 +14,7 @@ import BaseButton from '../classes/BaseButton';
 import prisma from '../prisma';
 import InteractionProps from '@interfaces/InteractionProps';
 import FillFormMessage from 'messages/FillFormMessage';
+import { UserResponseStatus } from '@prisma/client';
 
 export default ((props: InteractionProps) => new (class FillFormButton extends BaseButton implements BaseInteraction {
 
@@ -102,7 +103,7 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
         if (!form) {
             // If no form is active, reply to user to set it up
             await interaction.reply({
-                content: 'No form is created, please run `/pickem new <name> <file>`',
+                content: 'No form is active, please run `/pickem new <name> <file>` or `/pickem set <name>`',
                 ephemeral: true,
             });
             return;
@@ -154,7 +155,7 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
                 }
 
                 return await interaction.reply({
-                    content: `You'r submission is currently ${userResponse?.status}${userResponse?.status === 'pending' ? ` in <#${userResponse.channelId}>` : ''}.`,
+                    content: `You'r submission is currently ${userResponse?.status}${userResponse?.status === UserResponseStatus.PENDING ? ` in <#${userResponse.channelId}>` : ''}.`,
                     ephemeral: true,
                 });
                 return;

@@ -1,18 +1,20 @@
-import { Client, Events, GatewayIntentBits, Collection, Guild } from 'discord.js';
+import { Client, Events, GatewayIntentBits, Collection, Guild, ActivityType } from 'discord.js';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 
 
 import prisma from './prisma';
 import commands from './registries/register_commands';
-import interactionManager from 'registries/register_interactions';
-import { ChangeForm } from 'services/form.service';
+import { Init, interactionManager } from 'registries/register_interactions';
+import FormService from 'services/form.service';
+import tasks from 'registries/register_tasks';
 
 //////////////////////////
-// LOAD ENVIRONMENT VARIABLES
+// INIT ENV + LOAD INTERACTIONS
 //////////////////////////
 
 dotenv.config();
+Init();
 
 //////////////////////////
 // CREATE CLIENT
@@ -28,7 +30,7 @@ const client = new Client({
     ],
 });
 
-let guild : Guild;
+let guild: Guild;
 
 //////////////////////////
 // LAUNCH CLIENT
@@ -38,14 +40,12 @@ let guild : Guild;
 
     client.on(Events.InteractionCreate, async interaction => {
         if (interaction.isCommand()) {
-            console.log('CMD');
             const command = commands.get(interaction.commandName);
             command?.execute(interaction);
             return;
         }
 
         if (!('customId' in interaction)) return;
-        console.log(`CMD: ${interaction.customId}`);
         interactionManager.Get(interaction.customId)?.execute(interaction);
     });
 
@@ -61,14 +61,34 @@ let guild : Guild;
         guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID!);
 
         console.log('Loading cron jobs...');
-        prisma.formCron.findMany().then(cronJobs => {
-            for (const cronJob of cronJobs) {
-                console.log(`Loading cron job: ${cronJob.cron}`);
-                cron.schedule(cronJob.cron, async () => {
-                    ChangeForm(cronJob.formId, guild);
-                })
+        const Jobs = await prisma.formCron.findMany({
+            include: {
+                form: true,
             }
         });
+
+        for (const cronJob of Jobs) {
+            console.log(`Loading cron job: ${cronJob.cron}`);
+            tasks.set(cronJob.form.title,
+                cron.schedule(cronJob.cron, async () => {
+                    FormService.Switch(cronJob.form.title, guild);
+                }))
+        }
+
+        //////////////////////////
+        /// Bot status
+        //////////////////////////
+
+        client.user?.setPresence({
+            status: 'online',
+            activities: [
+                {
+                    name: 'Online - /pickem | Author: @limeal',
+                    type: ActivityType.Playing
+                }
+            ]
+        });
+
 
         console.log(`Logged in as ${client.user!.tag}!`);
     });
