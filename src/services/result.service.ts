@@ -1,5 +1,5 @@
-import { UserResponse, UserSubmission } from "@prisma/client"
-import { AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildBasedChannel, MessageComponentInteraction, ModalSubmitInteraction, PermissionFlagsBits, TextBasedChannel, TextChannel, User } from "discord.js"
+import { Form, UserResponse, UserSubmission } from "@prisma/client"
+import { AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildBasedChannel, MessageComponentInteraction, ModalSubmitInteraction, PermissionFlagsBits, TextBasedChannel, TextChannel, ThreadAutoArchiveDuration, User } from "discord.js"
 import Jimp from "jimp"
 
 import prisma from "../prisma"
@@ -9,18 +9,19 @@ const ResultImagePath = 'assets/images/response.jpg'
 const FontPath = 'assets/fonts/Bebas.fnt'
 
 export default class ResultService {
-    public static async Create(interaction: MessageComponentInteraction | ModalSubmitInteraction | ChatInputCommandInteraction, user: User, response: UserResponse, submissions: UserSubmission[]) {
+    public static async Create(interaction: MessageComponentInteraction | ModalSubmitInteraction | ChatInputCommandInteraction, user: User, form: Form, response: (UserResponse & { submissions: UserSubmission[] })) {
 
         const guild = interaction.guild!;
         const config = await prisma.config.findFirst();
 
         if (!config)
-            return await interaction.reply({ content: 'ERR L009 - An error occured, please try again.' });
+            return await interaction.reply({ content: 'An error occured, please try again.' });
 
+        const resultChannel = await guild.channels.cache.get(form.resultChannelId) as TextChannel;
 
         const questions = await prisma.formQuestion.findMany({
             where: {
-                id: { in: submissions.map((s: any) => s.questionId) },
+                id: { in: response.submissions.map((s: any) => s.questionId) },
             },
             include: {
                 coordinates: true,
@@ -29,10 +30,10 @@ export default class ResultService {
 
         const image = await Jimp.read(ResultImagePath);
         if (!image)
-            return await interaction.reply({ content: 'ERR L010 - An error occured, please try again.' });
+            return await interaction.reply({ content: 'An error occured, please try again.' });
         const font = await Jimp.loadFont(FontPath);
         if (!font)
-            return await interaction.reply({ content: 'ERR L011 - An error occured, please try again.' });
+            return await interaction.reply({ content: 'An error occured, please try again.' });
 
         const size = 180;
         const userAvatar = await Jimp.read(user.displayAvatarURL({ extension: 'png', size: 256 }));
@@ -44,48 +45,35 @@ export default class ResultService {
         image.composite(userAvatar, 765, 130);
 
 
-        for (let i = 0; i < submissions.length; i++) {
-            let question = questions.find(question => question.id === submissions[i].questionId);
-            if (!question) return await interaction.reply({ content: 'ERR L012 - An error occured, please try again.' });
-            if (submissions[i].answers.length !== question.coordinates.length) return await interaction.reply({ content: 'ERR L013 - An error occured, please try again.' });
-            for (let j = 0; j < submissions[i].answers.length; j++) {
+        for (let i = 0; i < response.submissions.length; i++) {
+            let question = questions.find(question => question.id === response.submissions[i].questionId);
+            if (!question) return await interaction.reply({ content: 'An error occured, please try again.' });
+            if (response.submissions[i].answers.length !== question.coordinates.length) return await interaction.reply({ content: 'An error occured, please try again.' });
+            for (let j = 0; j < response.submissions[i].answers.length; j++) {
                 let coordinate = question.coordinates[j];
-                if (!coordinate) return await interaction.reply({ content: 'ERR L014 - An error occured, please try again.' });
-                console.log(coordinate.x, coordinate.y, submissions[i].answers[j], coordinate.width, coordinate.height);
-                image.print(font, coordinate.x, coordinate.y, submissions[i].answers[j].replace('_', ' '), coordinate.width, coordinate.height);
+                if (!coordinate) return await interaction.reply({ content: 'An error occured, please try again.' });
+                image.print(font, coordinate.x, coordinate.y, response.submissions[i].answers[j].replaceAll('_', ' '), coordinate.width, coordinate.height);
             }
         }
 
+        let thread = response.respThreadId ? resultChannel.threads.cache.get(response.respThreadId) : undefined;
+        let message = (response.respMessageId && thread) ? (thread.messages.cache.get(response.respMessageId) || await thread.messages.fetch(response.respMessageId)) : undefined;
 
-        let channel: TextChannel | undefined = guild.channels.cache.get(response.respChannelId) as TextChannel || await guild.channels.fetch(response.respChannelId) || undefined;
-        let message = null;
-        if (!channel) {
-            const newChannel = await guild.channels.create({
-                name: `${interaction.user.id === user.id ? `result-${user.username}` : `test-${user.username}-${interaction.user.username}`}`,
-                type: ChannelType.GuildText,
-                parent: config?.resultCategoryId,
-                permissionOverwrites: [
-                    {
-                        id: user.id,
-                        allow: [
-                            PermissionFlagsBits.ViewChannel,
-                        ],
-                    },
-                ],
+        console.log(thread, message);
+        if (!thread) {
+            thread = await resultChannel.threads.create({
+                name: `Result ${user.username}`,
+                autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+                type: ChannelType.PublicThread
             });
 
-            if (!newChannel)
-                return await interaction.reply({ content: 'ERR L015 - An error occured, please try again.' });
+        }
 
-            channel = newChannel as TextChannel;
-        } else
-            message = channel.messages.cache.get(response.respMessageId) || await channel.messages.fetch(response.respMessageId);
-
-        await interaction.reply({ content: `Result available in <#${channel.id}>`, ephemeral: true, fetchReply: true  });
+        await interaction.reply({ content: `Result available in <#${thread.id}>`, ephemeral: true, fetchReply: true  });
         if (!message)
-            message = await channel.send(ResultMessage(await image.getBufferAsync(Jimp.MIME_PNG), response.score, response.nextIndex))
+            message = await thread.send(ResultMessage(await image.getBufferAsync(Jimp.MIME_PNG), user, response.score, response.submissions.length))
         else
-            await message.edit(ResultMessage(await image.getBufferAsync(Jimp.MIME_PNG), response.score, response.nextIndex))
+            await message.edit(ResultMessage(await image.getBufferAsync(Jimp.MIME_PNG), user, response.score, response.submissions.length))
 
         return await prisma.userResponse.update({
             where: {
@@ -93,10 +81,9 @@ export default class ResultService {
                 userId: user.id,
             },
             data: {
-                respChannelId: channel.id,
+                respThreadId: thread.id,
                 respMessageId: message.id,
             },
         });
-
     }
 }

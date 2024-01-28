@@ -4,41 +4,39 @@
         "image": "victorieux_semaine.png",
         "questions": [
             {
-                "title": "Quelle équipe remportera la partie à la fin de la manche \"Le Duel\" ?",
+                "ref": 0,
+                "title": "Quelle équipe remportera la partie a la fin de la manche \"Le Duel\" ?",
                 "type": "select",
                 "choices": [
-                    "Equipe 1",
-                    "Equipe 2"
+                    "Les Vrais Cracks",
+                    "TheFire Demons"
                 ],
-                "answers": [
-                    "Equipe 1"
-                ],
+                "nb_answers": 1,
                 "coordinates": [
                     {
                         "x": 220,
                         "y": 530,
                         "width": 200,
-                        "height": 600
+                        "height": 100
                     }
                 ]
             },
             {
-                "title": "Quel joueur remportera la partie à la fin de la manche \"La Finale\" ?",
+                "ref": 1,
+                "title": "Quel joueur remportera la partie a la fin de la manche \"La Finale\" ?",
                 "type": "select",
                 "choices": [
-                    "Joueur 1",
-                    "Joueur 2",
-                    "Joueur 3"
+                    "BackTotheTomorow",
+                    "Patate du Samedi",
+                    "Oompa0Loompa"
                 ],
-                "answers": [
-                    "Joueur 1"
-                ],
+                "nb_answers": 1,
                 "coordinates": [
                     {
                         "x": 690,
                         "y": 530,
                         "width": 200,
-                        "height": 600
+                        "height": 100
                     }
                 ]
             }
@@ -49,6 +47,7 @@
         "image": "bon_ordre.png",
         "questions": [
             {
+                "ref": 2,
                 "title": "Classer du meilleur au moins bon, les 6 participants de la manche \"Le Duel\"  en matière de points marqués par les objectifs accomplis.",
                 "type": "select",
                 "choices": [
@@ -59,49 +58,42 @@
                     "Joueur 5",
                     "Joueur 6"
                 ],
-                "answers": [
-                    "Joueur 1",
-                    "Joueur 2",
-                    "Joueur 3",
-                    "Joueur 4",
-                    "Joueur 5",
-                    "Joueur 6"
-                ],
+                "nb_answers": 6,
                 "coordinates": [
                     {
-                        "x": 498,
-                        "y": 597,
-                        "width": 100,
+                        "x": 190,
+                        "y": 750,
+                        "width": 200,
                         "height": 100
                     },
                     {
-                        "x": 498,
-                        "y": 597,
-                        "width": 100,
+                        "x": 490,
+                        "y": 750,
+                        "width": 200,
                         "height": 100
                     },
                     {
-                        "x": 498,
-                        "y": 597,
-                        "width": 100,
+                        "x": 790,
+                        "y": 750,
+                        "width": 200,
                         "height": 100
                     },
                     {
-                        "x": 498,
-                        "y": 597,
-                        "width": 100,
+                        "x": 190,
+                        "y": 835,
+                        "width": 200,
                         "height": 100
                     },
                     {
-                        "x": 498,
-                        "y": 597,
-                        "width": 100,
+                        "x": 490,
+                        "y": 835,
+                        "width": 200,
                         "height": 100
                     },
                     {
-                        "x": 498,
-                        "y": 597,
-                        "width": 100,
+                        "x": 790,
+                        "y": 835,
+                        "width": 200,
                         "height": 100
                     }
                 ]
@@ -113,9 +105,11 @@
         "image": "tierce_gagnant.png",
         "questions": [
             {
+                "ref": 3,
                 "title": "Classer du meilleur au moins bon, les 3 participants de la manche \"La Finale\"  en matière de points marqués par les objectifs accomplis. ",
                 "parts": [
                     {
+                        "ref": 4,
                         "title": "Choisissez la Team.",
                         "type": "select",
                         "choices": [
@@ -123,19 +117,18 @@
                             "Equipe 2",
                             "Equipe 3"
                         ],
-                        "answers": [
-                            "Equipe 1"
-                        ],
+                        "nb_answers": 1,
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 175,
-                                "height": 539
+                                "x": 3000,
+                                "y": 3000,
+                                "width": 200,
+                                "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 5,
                         "title": "Choisissez les Joueurs dans l'ordre.",
                         "type": "select",
                         "depend_on": {
@@ -149,38 +142,34 @@
                                 "Joueur 3"
                             ],
                             "Equipe 2": [
-                                "Joueur 1",
-                                "Joueur 2",
-                                "Joueur 3"
+                                "Joueur 4",
+                                "Joueur 5",
+                                "Joueur 6"
                             ],
                             "Equipe 3": [
-                                "Joueur 1",
-                                "Joueur 2",
-                                "Joueur 3"
+                                "Joueur 7",
+                                "Joueur 8",
+                                "Joueur 9"
                             ]
                         },
-                        "answers": [
-                            "Joueur 1",
-                            "Joueur 2",
-                            "Joueur 3"
-                        ],
+                        "nb_answers": 3,
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 190,
+                                "y": 1060,
+                                "width": 200,
                                 "height": 100
                             },
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 490,
+                                "y": 1060,
+                                "width": 200,
                                 "height": 100
                             },
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 790,
+                                "y": 1060,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
@@ -194,55 +183,60 @@
         "image": "juste_prix.png",
         "questions": [
             {
+                "ref": 6,
                 "title": "Trouver le nombre exact d'objectifs accomplis de chaque \"Tier\" lors de la manche \"Le Duel\".",
                 "parts": [
                     {
+                        "ref": 7,
                         "title": "Numero Bleu Tier 1 - (0-11)",
                         "type": "text",
-                        "regex": "^([1-9]|1[01])$",
+                        "regex": "^([0-9]|1[01])$",
                         "style": "primary",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 200,
+                                "y": 1325,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 8,
                         "title": "Numero Jaune Tier 1 - (0-11)",
                         "type": "text",
                         "depend_on": {
                             "index": 0,
                             "rule": "neq"
                         },
-                        "regex": "^([1-9]|1[01])$",
+                        "regex": "^([0-9]|1[01])$",
                         "style": "secondary",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 350,
+                                "y": 1325,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 9,
                         "title": "Numero Bleu Tier 2 - (0-9)",
                         "type": "text",
                         "regex": "^[0-9]$",
                         "style": "primary",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 200,
+                                "y": 1390,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 10,
                         "title": "Numero Jaune Tier 2 - (0-9)",
                         "type": "text",
                         "style": "secondary",
@@ -253,28 +247,30 @@
                         "regex": "^[0-9]$",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 350,
+                                "y": 1390,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 11,
                         "title": "Numero Bleu Tier 3 - (0-5)",
                         "type": "text",
                         "style": "primary",
                         "regex": "^[0-5]$",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
+                                "x": 200,
+                                "y": 1455,
                                 "width": 100,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 12,
                         "title": "Numero Jaune Tier 3 - (0-5)",
                         "type": "text",
                         "style": "secondary",
@@ -285,8 +281,8 @@
                         "regex": "^[0-5]$",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
+                                "x": 350,
+                                "y": 1455,
                                 "width": 100,
                                 "height": 100
                             }
@@ -295,23 +291,26 @@
                 ]
             },
             {
+                "ref": 13,
                 "title": "Trouver le nombre exact d'objectifs accomplis de chaque \"Tier\" lors de la manche \"La Finale\".",
                 "parts": [
                     {
+                        "ref": 14,
                         "title": "Numero Bleu Tier 1 - (0-11)",
                         "type": "text",
-                        "regex": "^([1-9]|1[01])$",
+                        "regex": "^([0-9]|1[01])$",
                         "style": "primary",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
+                                "x": 710,
+                                "y": 1325,
                                 "width": 100,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 15,
                         "title": "Numero Jaune Tier 1 - (0-11)",
                         "type": "text",
                         "style": "secondary",
@@ -319,31 +318,33 @@
                             "index": 0,
                             "rule": "neq"
                         },
-                        "regex": "^([1-9]|1[01])$",
+                        "regex": "^([0-9]|1[01])$",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 860,
+                                "y": 1325,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 16,
                         "title": "Numero Bleu Tier 2 - (0-9)",
                         "type": "text",
                         "style": "primary",
                         "regex": "^[0-9]$",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 710,
+                                "y": 1390,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
                     },
                     {
+                        "ref": 17,
                         "title": "Numero Jaune Tier 2 - (0-9)",
                         "type": "text",
                         "style": "secondary",
@@ -354,9 +355,9 @@
                         "regex": "^[0-9]$",
                         "coordinates": [
                             {
-                                "x": 498,
-                                "y": 597,
-                                "width": 100,
+                                "x": 860,
+                                "y": 1390,
+                                "width": 200,
                                 "height": 100
                             }
                         ]
@@ -370,6 +371,7 @@
         "image": "question_bonus.png",
         "questions": [
             {
+                "ref": 18,
                 "title": {
                     "cat_0": [
                         {
@@ -395,212 +397,114 @@
                     ]
                 },
                 "type": "select",
-                "choices": {
-                    "cat_0": [
-                        "1 à 5 Minutes",
-                        "6 à 10 Minutes",
-                        "11 à 15 Minutes",
-                        "16 à 20 Minutes",
-                        "21 à 25 Minutes",
-                        "26 à 30 Minutes",
-                        "31 à 35 Minutes",
-                        "36 à 40 Minutes",
-                        "41 à 45 Minutes",
-                        "46 à 50 Minutes",
-                        "51 à 55 Minutes",
-                        "56 à 60 Minutes"
-                    ],
-                    "cat_1": [
-                        "1 Minute",
-                        "2 à 3 Minutes",
-                        "4 à 5 Minutes",
-                        "6 à 7 Minutes",
-                        "8 à 9 Minutes",
-                        "10 à 12 Minutes",
-                        "13 à 15 Minutes",
-                        "16 à 18 Minutes",
-                        "19 à 21 Minutes",
-                        "22 à 24 Minutes",
-                        "25 à 27 Minutes",
-                        "28 à 30 Minutes"
-                    ],
-                    "cat_2": [
-                        "1 à 2 Points",
-                        "3 à 4 Points",
-                        "5 à 6 Points",
-                        "7 à 9 Points",
-                        "10 à 12 Points",
-                        "13 à 15 Points",
-                        "16 à 18 Points",
-                        "19 à 21 Points",
-                        "22 à 24 Points",
-                        "25 à 27 Points",
-                        "28 à 30 Points"
-                    ],
-                    "cat_3": [
-                        "0 objectif",
-                        "1 objectif",
-                        "2 à 3 objectifs",
-                        "4 à 5 objectifs",
-                        "6 à 7 objectifs",
-                        "8 à 9 objectifs",
-                        "10 à 12 objectifs",
-                        "13 à 15 objectifs",
-                        "16 à 18 objectifs",
-                        "19 à 21 objectifs",
-                        "22 à 24 objectifs",
-                        "25 à 27 objectifs"
-                    ],
-                    "cat_4": [
-                        "0 objectif",
-                        "1 objectif",
-                        "2 objectifs",
-                        "3 objectifs",
-                        "4 objectifs",
-                        "5 à 6 objectifs",
-                        "7 à 8 objectifs",
-                        "9 à 10 objectifs",
-                        "11 à 12 objectifs",
-                        "13 à 14 objectifs",
-                        "15 à 16 objectifs",
-                        "17 à 18 objectifs"
-                    ],
-                    "cat_5": [
-                        "0 objectif",
-                        "1 objectif",
-                        "2 objectifs",
-                        "3 objectifs",
-                        "4 objectifs",
-                        "5 à 6 objectifs",
-                        "7 à 8 objectifs",
-                        "9 à 10 objectifs",
-                        "11 à 15 objectifs",
-                        "16 à 20 objectifs",
-                        "21 à 25 objectifs",
-                        "Plus de 25 objectifs"
-                    ],
-                    "cat_6": [
-                        "0 Morts",
-                        "1 à 5 Mort",
-                        "6 à 10 Morts",
-                        "11 à 15 Morts",
-                        "16 à 20 Morts",
-                        "21 à 25 Morts",
-                        "26 à 30 Morts",
-                        "31 à 35 Morts",
-                        "36 à 40 Morts",
-                        "41 à 45 Morts",
-                        "46 à 50 Morts",
-                        "Plus de 50 Morts"
-                    ]
-                },
-                "answers": {
-                    "cat_0": [
-                        "1 à 5 Minutes",
-                        "6 à 10 Minutes",
-                        "11 à 15 Minutes",
-                        "16 à 20 Minutes",
-                        "21 à 25 Minutes",
-                        "26 à 30 Minutes",
-                        "31 à 35 Minutes",
-                        "36 à 40 Minutes",
-                        "41 à 45 Minutes",
-                        "46 à 50 Minutes",
-                        "51 à 55 Minutes",
-                        "56 à 60 Minutes"
-                    ],
-                    "cat_1": [
-                        "1 Minute",
-                        "2 à 3 Minutes",
-                        "4 à 5 Minutes",
-                        "6 à 7 Minutes",
-                        "8 à 9 Minutes",
-                        "10 à 12 Minutes",
-                        "13 à 15 Minutes",
-                        "16 à 18 Minutes",
-                        "19 à 21 Minutes",
-                        "22 à 24 Minutes",
-                        "25 à 27 Minutes",
-                        "28 à 30 Minutes"
-                    ],
-                    "cat_2": [
-                        "1 à 2 Points",
-                        "3 à 4 Points",
-                        "5 à 6 Points",
-                        "7 à 9 Points",
-                        "10 à 12 Points",
-                        "13 à 15 Points",
-                        "16 à 18 Points",
-                        "19 à 21 Points",
-                        "22 à 24 Points",
-                        "25 à 27 Points",
-                        "28 à 30 Points"
-                    ],
-                    "cat_3": [
-                        "0 objectif",
-                        "1 objectif",
-                        "2 à 3 objectifs",
-                        "4 à 5 objectifs",
-                        "6 à 7 objectifs",
-                        "8 à 9 objectifs",
-                        "10 à 12 objectifs",
-                        "13 à 15 objectifs",
-                        "16 à 18 objectifs",
-                        "19 à 21 objectifs",
-                        "22 à 24 objectifs",
-                        "25 à 27 objectifs"
-                    ],
-                    "cat_4": [
-                        "0 objectif",
-                        "1 objectif",
-                        "2 objectifs",
-                        "3 objectifs",
-                        "4 objectifs",
-                        "5 à 6 objectifs",
-                        "7 à 8 objectifs",
-                        "9 à 10 objectifs",
-                        "11 à 12 objectifs",
-                        "13 à 14 objectifs",
-                        "15 à 16 objectifs",
-                        "17 à 18 objectifs"
-                    ],
-                    "cat_5": [
-                        "0 objectif",
-                        "1 objectif",
-                        "2 objectifs",
-                        "3 objectifs",
-                        "4 objectifs",
-                        "5 à 6 objectifs",
-                        "7 à 8 objectifs",
-                        "9 à 10 objectifs",
-                        "11 à 15 objectifs",
-                        "16 à 20 objectifs",
-                        "21 à 25 objectifs",
-                        "Plus de 25 objectifs"
-                    ],
-                    "cat_6": [
-                        "0 Morts",
-                        "1 à 5 Mort",
-                        "6 à 10 Morts",
-                        "11 à 15 Morts",
-                        "16 à 20 Morts",
-                        "21 à 25 Morts",
-                        "26 à 30 Morts",
-                        "31 à 35 Morts",
-                        "36 à 40 Morts",
-                        "41 à 45 Morts",
-                        "46 à 50 Morts",
-                        "Plus de 50 Morts"
-                    ]
-                },
+                "nb_answers": 1,
                 "coordinates": [
                     {
-                        "x": 498,
-                        "y": 597,
+                        "x": 150,
+                        "y": 1735,
                         "width": 100,
                         "height": 100
                     }
-                ]
+                ],
+                "choices": {
+                    "cat_0": [
+                        "1 a 5 Minutes",
+                        "6 a 10 Minutes",
+                        "11 a 15 Minutes",
+                        "16 a 20 Minutes",
+                        "21 a 25 Minutes",
+                        "26 a 30 Minutes",
+                        "31 a 35 Minutes",
+                        "36 a 40 Minutes",
+                        "41 a 45 Minutes",
+                        "46 a 50 Minutes",
+                        "51 a 55 Minutes",
+                        "56 a 60 Minutes"
+                    ],
+                    "cat_1": [
+                        "1 Minute",
+                        "2 a 3 Minutes",
+                        "4 a 5 Minutes",
+                        "6 a 7 Minutes",
+                        "8 a 9 Minutes",
+                        "10 a 12 Minutes",
+                        "13 a 15 Minutes",
+                        "16 a 18 Minutes",
+                        "19 a 21 Minutes",
+                        "22 a 24 Minutes",
+                        "25 a 27 Minutes",
+                        "28 a 30 Minutes"
+                    ],
+                    "cat_2": [
+                        "1 a 2 Points",
+                        "3 a 4 Points",
+                        "5 a 6 Points",
+                        "7 a 9 Points",
+                        "10 a 12 Points",
+                        "13 a 15 Points",
+                        "16 a 18 Points",
+                        "19 a 21 Points",
+                        "22 a 24 Points",
+                        "25 a 27 Points",
+                        "28 a 30 Points"
+                    ],
+                    "cat_3": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 a 3 objectifs",
+                        "4 a 5 objectifs",
+                        "6 a 7 objectifs",
+                        "8 a 9 objectifs",
+                        "10 a 12 objectifs",
+                        "13 a 15 objectifs",
+                        "16 a 18 objectifs",
+                        "19 a 21 objectifs",
+                        "22 a 24 objectifs",
+                        "25 a 27 objectifs"
+                    ],
+                    "cat_4": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 objectifs",
+                        "3 objectifs",
+                        "4 objectifs",
+                        "5 a 6 objectifs",
+                        "7 a 8 objectifs",
+                        "9 a 10 objectifs",
+                        "11 a 12 objectifs",
+                        "13 a 14 objectifs",
+                        "15 a 16 objectifs",
+                        "17 a 18 objectifs"
+                    ],
+                    "cat_5": [
+                        "0 objectif",
+                        "1 objectif",
+                        "2 objectifs",
+                        "3 objectifs",
+                        "4 objectifs",
+                        "5 a 6 objectifs",
+                        "7 a 8 objectifs",
+                        "9 a 10 objectifs",
+                        "11 a 15 objectifs",
+                        "16 a 20 objectifs",
+                        "21 a 25 objectifs",
+                        "Plus de 25 objectifs"
+                    ],
+                    "cat_6": [
+                        "0 Morts",
+                        "1 a 5 Mort",
+                        "6 a 10 Morts",
+                        "11 a 15 Morts",
+                        "16 a 20 Morts",
+                        "21 a 25 Morts",
+                        "26 a 30 Morts",
+                        "31 a 35 Morts",
+                        "36 a 40 Morts",
+                        "41 a 45 Morts",
+                        "46 a 50 Morts",
+                        "Plus de 50 Morts"
+                    ]
+                }
             }
         ]
     }

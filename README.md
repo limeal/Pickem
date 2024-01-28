@@ -4,7 +4,7 @@
     <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Pickle_logo_icon_emoji_pickled_cucumber.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">**Pickme**: Discord Bot</h3>
+  <h3 align="center"><strong>Pickme</strong>: Discord Bot</h3>
 
   <p align="center">
     Discord bot to collect data about an specific evenement each week and to gift player 
@@ -78,6 +78,19 @@ git clone https://github.com/your_username_/Project-Name.git
 DISCORD_CLIENT_ID=<CLIENT_ID>
 DISCORD_SECRET_KEY=<SECRET_KEY>
 DISCORD_BOT_TOKEN=<BOT_TOKEN>
+DISCORD_GUILD_ID=<GUILD_ID>
+```
+
+5. Register commands to your guide by running the following command:
+```
+npm install
+npm run commands:reload
+or
+pnpm install
+pnpm commands:reload
+or
+yarn install
+yarn run commands:reload
 ```
 
 ## License

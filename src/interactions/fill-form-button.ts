@@ -14,7 +14,7 @@ import BaseButton from '../classes/BaseButton';
 import prisma from '../prisma';
 import InteractionProps from '@interfaces/InteractionProps';
 import FillFormMessage from 'messages/FillFormMessage';
-import { UserResponseStatus } from '@prisma/client';
+import { FormStatus, UserResponseStatus } from '@prisma/client';
 
 export default ((props: InteractionProps) => new (class FillFormButton extends BaseButton implements BaseInteraction {
 
@@ -46,9 +46,14 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
                     id: interaction.user.id,
                     allow: [
                         PermissionFlagsBits.ViewChannel,
-                        PermissionFlagsBits.SendMessages,
                         PermissionFlagsBits.AttachFiles,
                     ],
+                    deny: [
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.SendTTSMessages,
+                        PermissionFlagsBits.ManageMessages,
+                        PermissionFlagsBits.EmbedLinks,
+                    ]
                 },
             ],
         });
@@ -102,11 +107,18 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
 
         if (!form) {
             // If no form is active, reply to user to set it up
-            await interaction.reply({
+            return await interaction.reply({
                 content: 'No form is active, please run `/pickem new <name> <file>` or `/pickem set <name>`',
                 ephemeral: true,
             });
-            return;
+        }
+
+        if (form.status === FormStatus.CLOSED) {
+            // If form is closed, reply to user to set it up
+            return await interaction.reply({
+                content: 'Form is closed !',
+                ephemeral: true,
+            });
         }
 
         let res = null;
@@ -161,7 +173,7 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
                 return;
             } else {
                 await interaction.reply({
-                    content: 'ERR L001 - An error occured, please try again.',
+                    content: 'An error occured, please try again.',
                     ephemeral: true,
                 });
             }

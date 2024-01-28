@@ -1,0 +1,17 @@
+{
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "ref": {
+                "type": "number"
+            },
+            "answers": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -2,6 +2,9 @@
     "$id": "question.json",
     "type": "object",
     "properties": {
+        "ref": {
+            "type": "number"
+        },
         "title": {
             "anyOf": [
                 {
@@ -79,26 +82,8 @@
                 }
             ]
         },
-        "answers": {
-            "anyOf": [
-                {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                {
-                    "type": "object",
-                    "patternProperties": {
-                        ".*": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            ]
+        "nb_answers": {
+            "type": "number"
         },
         "coordinates": {
             "type": "array",
@@ -116,12 +101,14 @@
     "oneOf": [
         {
             "required": [
+                "ref",
                 "title",
                 "parts"
             ]
         },
         {
             "required": [
+                "ref",
                 "title",
                 "type",
                 "regex",
@@ -130,9 +117,10 @@
         },
         {
             "required": [
+                "ref",
                 "title",
                 "type",
-                "answers",
+                "nb_answers",
                 "coordinates"
             ]
         }

@@ -11,14 +11,12 @@ const createQuestion = async (
     parentId?: number,
     lasts?: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] })[],
 ) => {
-    let { title, type, depend_on, regex, style, choices, answers, coordinates, parts } = question;
-    console.log('Creating question', question);
-
+    let { ref, title, type, depend_on, regex, style, choices, nb_answers, coordinates, parts } = question;
+    
     let qTitle = '';
     let qAIdx: number = -1;
     let cKey: string = '';
     let qChoices: Map<string, string[]> = new Map<string, string[]>([]);
-    let qAnswers: string[] = [];
     let qLink: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] }) | undefined = undefined;
     let qLinkType: FormQuestionLinkType = FormQuestionLinkType.NONE;
     let qType: FormQuestionType = FormQuestionType.MULTIPART;
@@ -75,13 +73,12 @@ const createQuestion = async (
         if (cKey && !Array.isArray(choices)) choices = choices[cKey];
         if (qLink && qLinkType === FormQuestionLinkType.TAKE_ANSWER) {
             if (Array.isArray(choices)) throw new Error('Choices must be an object to use depend_on with key');
-            console.log('QLink', qLink);
             switch (qLink.type) {
                 case FormQuestionType.SELECT:
                     if (qLink.choices.length !== 1) throw new Error('Choices must have only one category');
                     const values = qLink.choices[0].values;
                     for (const link_value of values)
-                        qChoices.set(link_value.toLowerCase().replace(/ /g, '_'), choices[link_value]);
+                        qChoices.set(link_value.toLowerCase().replaceAll(/ /g, '_'), choices[link_value]);
                     break;
                 default:
                     throw new Error('Depend_on can only be used with select question');
@@ -94,33 +91,10 @@ const createQuestion = async (
         }
     }
 
-    if (answers) {
-        if (cKey && !Array.isArray(answers)) answers = answers[cKey];
-        if (!answers || !Array.isArray(answers)) throw new Error('Answers does not exist / Must be an array');
-        qAnswers = answers;
-        if (qAIdx >= 0) {
-            const answer = qAnswers[qAIdx];
-            if (!answer) throw new Error('Answer does not exist');
-            qAnswers = [answer];
-        }
-    } else {
-        if (qType === FormQuestionType.TEXT) {
-            let gen = "0";
-            do {
-                gen = new RandExp(regex || '.*').gen();
-                qAnswers = [gen];
-            } while (qLink && qLinkType === FormQuestionLinkType.NOT_EQUAL && qLink.answers.includes(gen));
-        } else if (!parts) throw new Error('Parts does not exist');
-    }
-
-    if (coordinates && qAnswers.length !== coordinates.length) throw new Error('Answers and coordinates must have the same length');
-
     let choices_ids: number[] = [];
     let coords_ids: number[] = [];
     try {
-        console.log('Choices', qChoices);
         for (const [key, value] of qChoices) {
-            console.log(key, value);
             const elem = await prisma.formQuestionChoice.create({
                 data: {
                     category: key,
@@ -164,6 +138,7 @@ const createQuestion = async (
 
     const new_question = await prisma.formQuestion.create({
         data: {
+            ref,
             formId,
             categoryId,
             parentId: parentId ?? null,
@@ -173,7 +148,7 @@ const createQuestion = async (
             title: qTitle,
             style,
             regex,
-            answers: qAnswers,
+            nb_answers: nb_answers ?? 1,
             choices: {
                 connect: choices_ids.map(id => ({ id })),
             },
@@ -195,7 +170,7 @@ const createQuestion = async (
         }
     }
 
-    console.log('Result question', new_question);
+    console.log('Create question', new_question);
     return new_question;
 }
 

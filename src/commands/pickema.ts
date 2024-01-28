@@ -118,6 +118,17 @@ export default {
                     .setRequired(true)
                 )
         )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('inject')
+                .setDescription('Inject Answer into a pickem.')
+                .addStringOption(option =>
+                    option
+                        .setName('file_loc')
+                        .setDescription('The file_loc of the injection.')
+                        .setRequired(true)
+                )
+        )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
         switch (interaction.options.getSubcommand()) {
@@ -125,12 +136,7 @@ export default {
                 const name = interaction.options.getString('name');
                 const qFile = interaction.options.getString('file_loc') || 'default';
 
-                try {
-                    const pickem = await FormService.Create(name!, qFile!, interaction.guildId!);
-                    return interaction.reply({ content: `Created a new pickem with id: ${pickem.id}`, ephemeral: true });
-                } catch (error: any) {
-                    return await interaction.reply({ content: `Pickem with name ${name}, already exist or occur an error in creation process.`, ephemeral: true });
-                }
+                return await FormService.Create(interaction, name!, qFile!, interaction.guild!);
             case 'list':
                 const forms = await FormService.GetAll();
                 if (forms.length === 0) return await interaction.reply('No Pickem found, use /pickema new <name>');
@@ -138,7 +144,7 @@ export default {
             case 'delete':
                 const name2 = interaction.options.getString('name');
                 try {
-                    await FormService.Delete(name2!);
+                    await FormService.Delete(name2!, interaction.guild!);
                     return await interaction.reply({ content: `Deleted pickem with name: ${name2}`, ephemeral: true });
                 } catch (error: any) {
                     return await interaction.reply({ content: `Pickem with name ${name2}, does not exist.`, ephemeral: true });
@@ -212,11 +218,24 @@ export default {
 
                     if (!userResponse) return await interaction.reply({ content: `User ${genResultUser.username} does not have a response.`, ephemeral: true });
 
-                    return await ResultService.Create(interaction, genResultUser, userResponse!, userResponse!.submissions);
+                    const form = await prisma.form.findFirst({
+                        where: {
+                            id: userResponse.formId,
+                        },
+                    });
+
+                    if (!form) return await interaction.reply({ content: `Form ${userResponse.formId} does not exist.`, ephemeral: true });
+
+                    return await ResultService.Create(interaction, genResultUser, form, userResponse);
                 }
                 break;
+            case 'inject':
+                const file_loc = interaction.options.getString('file_loc');
+
+                return await FormService.Inject(interaction, file_loc!, interaction.guild!);
             default:
                 break;
+
         }
     },
 };

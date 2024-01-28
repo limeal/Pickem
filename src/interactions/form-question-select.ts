@@ -27,13 +27,12 @@ export default (props: InteractionProps) => new (class FormQuestionSelect extend
         if (question?.linkedId) {
             const linked = last_submissions.find(s => s.questionId === question.linkedId);
             if (!linked) throw new Error('Invalid linked question !');
-            console.log('Linked', linked.answers[0]);
             qChoices = question.choices.find(c => c.category === linked.answers[0])?.values || [];
         } else
             qChoices = question?.choices.find(c => c.category === 'default')?.values || [];
 
 
-        super(props.custom_id, 'STRING', question?.answers?.length, question?.answers?.length, qChoices);
+        super(props.custom_id, 'STRING', question?.nb_answers, question?.nb_answers, qChoices);
         this.question = { ...question };
     }
 
@@ -45,12 +44,6 @@ export default (props: InteractionProps) => new (class FormQuestionSelect extend
 
         // Get content selected by the interaction
         const values = interaction.values;
-
-        // Check if values is the same as answers
-        let count = 0;
-        for (let i = 0; i < this.question.answers.length; i++) {
-            count += (this.question?.answers[i].toUpperCase() === values[i].toUpperCase().replace('_', ' ') ? 1 : 0)
-        }
 
         try {
             const userResponse = await prisma.userResponse.findFirst({
@@ -66,7 +59,6 @@ export default (props: InteractionProps) => new (class FormQuestionSelect extend
                     userId: interaction.user.id
                 },
                 data: {
-                    score: { increment: count === this.question?.answers?.length ? 1 : 0 },
                     nextIndex: { increment: 1 }
                 }
             })

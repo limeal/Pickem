@@ -14,9 +14,6 @@ export default class BaseSelect {
     ) {
         this.type = type;
         this.select = null;
-        // Compare T to determine which type of select to build
-
-        console.log('Creating select', type, minValues, maxValues, choices);
 
         switch (type) {
             case 'STRING':
@@ -27,7 +24,7 @@ export default class BaseSelect {
                     .addOptions(...choices.map((choice: any) => {
                          return new StringSelectMenuOptionBuilder()
                           .setLabel(choice)
-                          .setValue(choice.toLowerCase().replace(/ /g, '_'))
+                          .setValue(choice.toLowerCase().replaceAll(/ /g, '_'))
                      }));
                 break;
             case 'USER':

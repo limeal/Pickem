@@ -8,19 +8,27 @@ datasource db {
 }
 
 model Config {
-    id               Int      @id @default(0)
-    formChannelId    String   @default("") // Channel where the form button to fill the form will be sent
-    formMessageId    String   @default("") // Message id where the form button to fill the form will be sent (for clean up)
-    formCategoryId   String   @default("") // Category where the form will be created
-    resultCategoryId String   @default("") // Category where the results will be created
-    createdAt        DateTime @default(now())
-    updatedAt        DateTime @updatedAt
+    id             Int      @id @default(0)
+    formChannelId  String   @default("") // Channel where the form button to fill the form will be sent
+    formMessageId  String   @default("") // Message id where the form button to fill the form will be sent (for clean up)
+    formCategoryId String   @default("") // Category where the form will be created
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+}
+
+enum FormStatus {
+    OPEN
+    CLOSED
 }
 
 model Form {
-    id         Int            @id @default(autoincrement())
-    title      String         @unique
-    active     Boolean        @default(false)
+    id     Int        @id @default(autoincrement())
+    title  String     @unique
+    active Boolean    @default(false)
+    status FormStatus @default(OPEN)
+
+    resultChannelId String @default("") // Channel where the result of the form will be sent
+
     responses  UserResponse[]
     createdAt  DateTime       @default(now())
     updatedAt  DateTime       @updatedAt
@@ -92,6 +100,7 @@ enum FormQuestionType {
 
 model FormQuestion {
     id             Int              @id @default(autoincrement())
+    ref            Int              @default(0) // Reference of the question
     formId         Int
     form           Form             @relation("FormQuestion", fields: [formId], references: [id], onDelete: Cascade)
     categoryId     Int
@@ -110,10 +119,13 @@ model FormQuestion {
     linkedId Int?
     linked   FormQuestion?        @relation("LinkedQuestions", fields: [linkedId], references: [id])
 
-    choices   FormQuestionChoice[] @relation("FormChoices")
-    answers   String[] // Answers of the question
-    createdAt DateTime             @default(now())
-    updatedAt DateTime             @updatedAt
+    choices FormQuestionChoice[] @relation("FormChoices")
+
+    nb_answers Int      @default(1) // Number of answers to the question
+    answers    String[] // Answers of the question
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     coordinates FormQuestionCoord[] @relation("FormQuestionCoord")
 
@@ -137,16 +149,16 @@ model UserResponse {
     nextIndex   Int              @default(0) // Index of the next question to answer
     submissions UserSubmission[]
 
-    userId        String             @unique
-    channelId     String             @default("") // Channel id where the user is completing the form
+    userId    String @unique
+    channelId String @default("") // Channel id where the user is completing the form
 
-    respChannelId String             @default("") // Channel id where the user has the answer of the sform
-    respMessageId String             @default("") // Message id where the user has the answer of the sform
+    respThreadId  String @default("") // Channel id where the user has the answer of the sform
+    respMessageId String @default("") // Message id where the user has the answer of the sform
 
-    status        UserResponseStatus @default(PENDING) // pending, completed
-    score         Int                @default(0) // Score of the user 1 point per correct answer
-    createdAt     DateTime           @default(now())
-    updatedAt     DateTime           @updatedAt
+    status    UserResponseStatus @default(PENDING) // pending, completed
+    score     Int                @default(-1) // Score of the user 1 point per correct answer
+    createdAt DateTime           @default(now())
+    updatedAt DateTime           @updatedAt
 }
 
 model UserSubmission {

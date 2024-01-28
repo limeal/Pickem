@@ -2,7 +2,7 @@ import { FormQuestionType } from "@prisma/client";
 import ICoord from "./ICoord";
 
 interface IQuestion {
-    id?: number;
+    ref: number;
     title: string | {
         [key: string]: {
             title: string;
@@ -19,9 +19,7 @@ interface IQuestion {
     choices?: string[] | {
         [key: string]: string[];
     };
-    answers?: string[] | {
-        [key: string]: string[];
-    };
+    nb_answers?: number;
     coordinates: ICoord[];
     parts?: IQuestion[];
 }

@@ -55,12 +55,12 @@ export default (props: InteractionProps) => new (class FormQuestionText extends 
 
         // Check if answer match the regex
         if (!answer.match(this.question.regex))
-            return await interaction.reply({ content: 'ERR L001 - Invalid answer, please retry.' })
+            return await interaction.reply({ content: 'Invalid answer, please retry.', ephemeral: true });
 
         // Check if values is the same as answers
         let count = 0;
         for (let i = 0; i < this.question.answers.length; i++) {
-            count += (this.question?.answers[i].toUpperCase() === answer.toUpperCase().replace('_', ' ') ? 1 : 0)
+            count += (this.question?.answers[i].toUpperCase() === answer.toUpperCase().replaceAll('_', ' ') ? 1 : 0)
         }
 
         try {
@@ -77,7 +77,6 @@ export default (props: InteractionProps) => new (class FormQuestionText extends 
                     userId: interaction.user.id
                 },
                 data: {
-                    score: { increment: count === this.question?.answers?.length ? 1 : 0 },
                     nextIndex: { increment: 1 }
                 }
             })
