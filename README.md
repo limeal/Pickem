@@ -67,7 +67,7 @@ docker compose build && docker compose up
 2. Clone the repo
 
 ```sh
-git clone https://github.com/your_username_/Project-Name.git
+git clone https://github.com/limeal/pickem.git
 ```
 
 3. Rename the .env.example to .env
@@ -79,18 +79,6 @@ DISCORD_CLIENT_ID=<CLIENT_ID>
 DISCORD_SECRET_KEY=<SECRET_KEY>
 DISCORD_BOT_TOKEN=<BOT_TOKEN>
 DISCORD_GUILD_ID=<GUILD_ID>
-```
-
-5. Register commands to your guide by running the following command:
-```
-npm install
-npm run commands:reload
-or
-pnpm install
-pnpm commands:reload
-or
-yarn install
-yarn run commands:reload
 ```
 
 ## License

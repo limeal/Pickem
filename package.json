@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc --build",
-    "clean": "tsc --build --clean",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "db:migrate": "prisma migrate dev --name init",
     "db:migrate:prod": "prisma migrate deploy --schema=./prisma/schema.prisma",

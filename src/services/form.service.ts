@@ -408,11 +408,7 @@ export default class FormService {
         if (!config) throw 'An error occured, please contact an admin.';
 
         // Get current active form
-        const currentActiveForm = await prisma.form.findFirst({
-            where: {
-                active: true,
-            },
-        });
+        const currentActiveForm = await FormService.GetCurrentForm();
 
         if (currentActiveForm && currentActiveForm.title === name) return;
 
@@ -476,6 +472,15 @@ export default class FormService {
             },
         });
     }
+
+    public static async GetCurrentForm() {
+        return await prisma.form.findFirst({
+            where: {
+                active: true,
+            },
+        });
+    }
+
 
     public static async Delete(name: string, guild: Guild) {
         const config = await prisma.config.findFirst();

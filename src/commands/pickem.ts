@@ -1,9 +1,11 @@
+import { FormStatus } from '@prisma/client';
 import {
     SlashCommandBuilder,
     ChatInputCommandInteraction,
     EmbedBuilder,
     Colors,
 } from 'discord.js';
+import FormService from 'services/form.service';
 import UserService from 'services/user.service';
 
 export default {
@@ -49,15 +51,17 @@ export default {
                     embed.setDescription('There are no users in the leaderboard');
                 }
 
-                interaction.reply({ embeds: [embed] });
-
-                break;
+                return interaction.reply({ embeds: [embed] });
             case 'score':
                 const user = interaction.options.getUser('user') || interaction.user;
                 try {
-                    const score = await UserService.Get(user);
+                    const response = await UserService.Get(user);
+                    const form = await FormService.GetCurrentForm();
 
-                    interaction.reply({ content: `<@${user.id}> has ${score} points.`, ephemeral: true });
+                    if (form?.status === FormStatus.CLOSED)
+                        return interaction.reply({ content: 'The form is closed.', ephemeral: true });
+                    
+                    return interaction.reply({ content: `<@${user.id}> has ${response.score} points.`, ephemeral: true });
                 } catch (err: any) {
                     interaction.reply({ content: `<@${user.id}> has not yet complete the form!`, ephemeral: true });
                 }
