@@ -405,7 +405,6 @@ export default class FormService {
 
     public static async Switch(name: string, guild: Guild) {
         const config = await prisma.config.findFirst();
-        if (!config) throw 'An error occured, please contact an admin.';
 
         // Get current active form
         const currentActiveForm = await FormService.GetCurrentForm();
@@ -434,7 +433,17 @@ export default class FormService {
         // Delete all responses
         await prisma.userResponse.deleteMany();
 
-        const categoryForm = await guild.channels.fetch(config?.formCategoryId);
+        if (config) {
+            const categoryForm = await guild.channels.fetch(config?.formCategoryId);
+
+            if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory)
+                throw 'An error occured, please contact an admin.';
+
+            categoryForm.children.cache.forEach(async (channel: any) => {
+                await channel.delete();
+            });
+
+        }
 
         const newForm = await prisma.form.findFirst({
             where: {
@@ -445,23 +454,20 @@ export default class FormService {
         if (!newForm) throw 'An error occured, please contact an admin.';
 
         let resultChannel = await guild.channels.fetch(newForm.resultChannelId);
+        if (resultChannel) {
+            if (resultChannel.type !== ChannelType.GuildText)
+                throw 'An error occured, please contact an admin.';
 
-        if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory || !resultChannel || resultChannel.type !== ChannelType.GuildText)
-            throw 'An error occured, please contact an admin.';
-
-        resultChannel = await resultChannel.edit({
-            permissionOverwrites: [
-                {
-                    id: guild.id,
-                    deny: this.DenyPermissionOverwrites,
-                    allow: [PermissionFlagsBits.ViewChannel]
-                }
-            ]
-        })
-
-        categoryForm.children.cache.forEach(async (channel: any) => {
-            await channel.delete();
-        });
+            resultChannel = await resultChannel.edit({
+                permissionOverwrites: [
+                    {
+                        id: guild.id,
+                        deny: this.DenyPermissionOverwrites,
+                        allow: [PermissionFlagsBits.ViewChannel]
+                    }
+                ]
+            })
+        }
 
         return await prisma.form.update({
             where: {
@@ -484,7 +490,6 @@ export default class FormService {
 
     public static async Delete(name: string, guild: Guild) {
         const config = await prisma.config.findFirst();
-        if (!config) throw 'An error occured, please contact an admin.';
 
         const form = await prisma.form.findFirst({
             where: {
@@ -495,16 +500,22 @@ export default class FormService {
         if (!form) throw 'An error occured, please contact an admin.';
         let resultChannel = await guild.channels.fetch(form.resultChannelId);
 
-        const categoryForm = await guild.channels.fetch(config?.formCategoryId);
+        if (config) {
+            const categoryForm = await guild.channels.fetch(config?.formCategoryId);
 
+            if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory)
+                throw 'An error occured, please contact an admin.';
 
-        if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory || !resultChannel || resultChannel.type !== ChannelType.GuildText)
-            throw 'An error occured, please contact an admin.';
+            categoryForm.children.cache.forEach(async (channel: any) => {
+                await channel.delete();
+            });
+        }
 
-        categoryForm.children.cache.forEach(async (channel: any) => {
-            await channel.delete();
-        });
-        await resultChannel.delete();
+        if (resultChannel) {
+            if (resultChannel.type !== ChannelType.GuildText)
+                throw 'An error occured, please contact an admin.';
+            await resultChannel.delete();
+        }
 
         return await prisma.form.delete({
             where: {

@@ -12,10 +12,6 @@ export default class ResultService {
     public static async Create(interaction: MessageComponentInteraction | ModalSubmitInteraction | ChatInputCommandInteraction, user: User, form: Form, response: (UserResponse & { submissions: UserSubmission[] })) {
 
         const guild = interaction.guild!;
-        const config = await prisma.config.findFirst();
-
-        if (!config)
-            return await interaction.reply({ content: 'An error occured, please try again.' });
 
         const resultChannel = await guild.channels.cache.get(form.resultChannelId) as TextChannel;
 

@@ -99,8 +99,8 @@ export default {
         )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('reset')
-                .setDescription('Reset a user answer.')
+                .setName('clear')
+                .setDescription('Clear a user answer.')
                 .addUserOption(option =>
                     option
                         .setName('user')
@@ -110,13 +110,8 @@ export default {
         )
         .addSubcommand(subcommand =>
             subcommand
-                .setName('misc')
-                .setDescription('Misc command')
-                .addUserOption(option => option
-                    .setName('gen-result')
-                    .setDescription('Regen the result of a pickem for user.')
-                    .setRequired(true)
-                )
+                .setName('reset')
+                .setDescription('Reset config')
         )
         .addSubcommand(subcommand =>
             subcommand
@@ -158,12 +153,20 @@ export default {
                     return await interaction.reply({ content: `Pickem with name ${name3}, does not exist.`, ephemeral: true });
                 }
             case 'setup':
+                const config = await prisma.config.findFirst();
+                if (config)
+                    return await interaction.reply({ content: `Pickem already setup, use /pickema reset to reset the config`, ephemeral: true });
                 return await interaction.showModal(interactionManager.Get('setup-modal')!.unwrap());
             case 'reset':
+                const { count } = await prisma.config.deleteMany();
+                if (count === 0)
+                    return await interaction.reply({ content: `Config not found, use /pickema setup`, ephemeral: true });
+                return await interaction.reply({ content: `Config successfully reset`, ephemeral: true });
+            case 'clear':
                 const user = interaction.options.getUser('user') || interaction.user;
                 try {
-                    await UserService.Reset(user, interaction.guild!);
-                    return await interaction.reply({ content: `Reset user ${user.username} response in pickem`, ephemeral: true });
+                    await UserService.Clear(user, interaction.guild!);
+                    return await interaction.reply({ content: `Clear user ${user.username} response in pickem`, ephemeral: true });
                 } catch (error: any) {
                     return await interaction.reply({ content: `An error occurred while resetting user ${user.username} response in pickem`, ephemeral: true });
                 }
@@ -204,35 +207,8 @@ export default {
                 if (!task) return await interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
                 task.stop();
                 return await interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
-            case 'misc':
-                const genResultUser = interaction.options.getUser('gen-result');
-                if (genResultUser) {
-                    const userResponse = await prisma.userResponse.findUnique({
-                        where: {
-                            userId: genResultUser.id,
-                        },
-                        include: {
-                            submissions: true,
-                        },
-                    });
-
-                    if (!userResponse) return await interaction.reply({ content: `User ${genResultUser.username} does not have a response.`, ephemeral: true });
-
-                    const form = await prisma.form.findFirst({
-                        where: {
-                            id: userResponse.formId,
-                        },
-                    });
-
-                    if (!form) return await interaction.reply({ content: `Form ${userResponse.formId} does not exist.`, ephemeral: true });
-
-                    return await ResultService.Create(interaction, genResultUser, form, userResponse);
-                }
-                break;
             case 'inject':
-                const file_loc = interaction.options.getString('file_loc');
-
-                return await FormService.Inject(interaction, file_loc!, interaction.guild!);
+                return await FormService.Inject(interaction, interaction.options.getString('file_loc')!, interaction.guild!);
             default:
                 break;
 

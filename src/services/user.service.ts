@@ -4,7 +4,7 @@ import prisma from "../prisma";
 import { FormStatus, UserResponse, UserResponseStatus, UserSubmission } from "@prisma/client";
 
 export default class UserService {
-    public static async Reset(user: User, guild: Guild) {
+    public static async Clear(user: User, guild: Guild) {
         const userResponse = await prisma.userResponse.findFirst({
             where: {
                 userId: user.id,
