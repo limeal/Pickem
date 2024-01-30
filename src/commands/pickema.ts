@@ -17,6 +17,7 @@ import ListFormsMessage from 'messages/ListFormsMessage';
 import tasks from 'registries/register_tasks';
 import ResultService from 'services/result.service';
 import { Form, FormStatus, UserResponse, UserSubmission } from '@prisma/client';
+import ListQuestionsMessage from 'messages/ListQuestionsMessage';
 
 export default {
     data: new SlashCommandBuilder()
@@ -44,6 +45,17 @@ export default {
             subcommand
                 .setName('list')
                 .setDescription('List all pickems.')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('questions')
+                .setDescription('List all questions of a pickem.')
+                .addStringOption(option =>
+                    option
+                        .setName('name')
+                        .setDescription('The name of the pickem')
+                        .setRequired(true)
+                )
         )
         .addSubcommand(subcommand =>
             subcommand
@@ -160,6 +172,18 @@ export default {
                 const forms = await FormService.GetAll();
                 if (forms.length === 0) return interaction.reply('No Pickem found, use /pickema new <name>');
                 return interaction.reply(ListFormsMessage(forms));
+            case 'questions':
+                const qName = interaction.options.getString('name');
+                let qform = null;
+
+                if (qName)
+                    qform = await prisma.form.findFirst({ where: { title: qName }, include: { questions: true } });
+                else
+                    qform = await prisma.form.findFirst({ where: { active: true }, include: { questions: true } });
+
+                if (!qform) return interaction.reply('No Pickem found, use /pickema new <name>');
+
+                return interaction.reply(ListQuestionsMessage(qform, qform.questions));
             case 'delete':
                 const name2 = interaction.options.getString('name');
                 try {

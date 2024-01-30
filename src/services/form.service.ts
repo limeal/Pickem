@@ -500,6 +500,14 @@ export default class FormService {
         });
     }
 
+    public static async Get(name: string) {
+        return await prisma.form.findFirst({
+            where: {
+                title: name,
+            }
+        });
+    }
+
 
     public static async Delete(name: string, guild: Guild) {
         const config = await prisma.config.findFirst();
