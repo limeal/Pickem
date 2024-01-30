@@ -69,12 +69,12 @@ export default class UserService {
             }
         }
 
-        await prisma.userResponse.update({
+        return await prisma.userResponse.update({
             where: {
                 id: userResponse.id,
             },
             data: {
-                score,
+                score: score,
             },
         });
     }
