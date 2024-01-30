@@ -13,10 +13,10 @@ export default (forms: (Form & { cron: FormCron | null, questions: FormQuestion[
                     name: form.title,
                     value:
                         `Actuel: ${form.active ? 'Oui' : 'Non'}
-                        \nOuvert: ${form.status === FormStatus.OPEN ? 'Oui' : 'Non'}
-                        \nNombre de Questions: ${form.questions.length}
-                        \nNombre de Réponses: ${form.responses.length}
-                        \nCategories: ${form.categories.join(', ')}
+                        Ouvert: ${form.status === FormStatus.OPEN ? 'Oui' : 'Non'}
+                        Nombre de Questions: ${form.questions.length}
+                        Nombre de Réponses: ${form.responses.length}
+                        Categories: ${form.categories.map(c => c.name).join(', ')}
                         ${form.cron?.cron ? `\nProgrammer: ${cronstrue.toString(form.cron?.cron)}
                         ` : ''}`,
                 }))

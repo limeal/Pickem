@@ -13,10 +13,10 @@ export default (form: Form, questions: FormQuestion[]) => ({
                     name: `Question ${q.ref}`,
                     value: `
                         Titre: ${q.title}
-                        \nType: ${q.type}
-                        \nNombre de réponses: ${q.nb_answers}
-                        ${q.answers.length > 0 ? `\nReponses: ${q.answers.join(', ')}` : ''}
-                        ${q.points.length > 0 ? `\nPoints: ${q.points}` : ''}
+                        Type: ${q.type}
+                        Nombre de réponses: ${q.nb_answers}
+                        ${q.answers.length > 0 ? `Reponses: ${q.answers.join(', ')}` : ''}
+                        ${q.points.length > 0 ? `Points: ${q.points}` : ''}
                     `
                 }))
             )
