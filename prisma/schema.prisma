@@ -121,6 +121,8 @@ model FormQuestion {
 
     choices FormQuestionChoice[] @relation("FormChoices")
 
+    points String @default("") // Points of the question: (ex: +2, -3, *2)
+
     nb_answers Int      @default(1) // Number of answers to the question
     answers    String[] // Answers of the question
 

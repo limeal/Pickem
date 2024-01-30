@@ -11,6 +11,10 @@
                 "items": {
                     "type": "string"
                 }
+            },
+            "points": {
+                "type": "string",
+                "pattern": "^(\\+|-|\\*)?([0-9])+$"
             }
         }
     }

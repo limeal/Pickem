@@ -147,7 +147,7 @@ export default class FormService {
         if (!fform) return interaction.reply({ content: 'A form with that name does not exist/ is open.', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
-            let filedata: { ref: number, answers: string[] }[] = await FormService.getFileData(file_loc);
+            let filedata: { ref: number, answers: string[], points: string }[] = await FormService.getFileData(file_loc);
 
             // Check if file is valid
             const valid = validateInject(filedata);
@@ -176,7 +176,8 @@ export default class FormService {
                         id: question?.id,
                     },
                     data: {
-                        answers: data.answers
+                        answers: data.answers,
+                        points: data.points
                     }
                 })
             }

@@ -2,14 +2,16 @@
     {
         "ref": 0,
         "answers": [
-            "Les Vrais Cracks"
-        ]
+            "Equipe 1"
+        ],
+      	"points": "+10"
     },
     {
         "ref": 1,
         "answers": [
-            "BackTotheTomorow"
-        ]
+            "Joueur 2"
+        ],
+      	"points": "+12"
     },
     {
         "ref": 2,
@@ -20,13 +22,15 @@
             "Joueur 4",
             "Joueur 5",
             "Joueur 6"
-        ]
+        ],
+      	"points": "+1"
     },
     {
         "ref": 4,
         "answers": [
             "Equipe 1"
-        ]
+        ],
+      	"points": "+1"
     },
     {
         "ref": 5,
@@ -34,72 +38,84 @@
             "Joueur 1",
             "Joueur 2",
             "Joueur 3"
-        ]
+        ],
+      	"points": "+1"
     },
     {
         "ref": 7,
         "answers": [
             "11"
-        ]
+        ],
+      	"points": "+1"
     },
     {
         "ref": 8,
         "answers": [
             "11"
-        ]
+        ],
+      	"points": "+1"
     },
     {
         "ref": 9,
         "answers": [
             "4"
-        ]
+        ],
+      	"points": "+1"
     },
     {
         "ref": 10,
         "answers": [
             "6"
-        ]
+        ],
+      	"points": "+15"
     },
     {
         "ref": 11,
         "answers": [
             "4"
-        ]
+        ],
+      	"points": "+13"
     },
     {
         "ref": 12,
         "answers": [
             "4"
-        ]
+        ],
+      	"points": "+12"
     },
     {
         "ref": 14,
         "answers": [
             "11"
-        ]
+        ],
+      	"points": "+10"
     },
     {
         "ref": 15,
         "answers": [
             "11"
-        ]
+        ],
+      	"points": "+9"
     },
     {
         "ref": 16,
         "answers": [
             "4"
-        ]
+        ],
+      	"points": "+5"
     },
     {
         "ref": 17,
         "answers": [
             "6"
-        ]
+        ],
+      	"points": "+4"
     },
     {
         "ref": 18,
         "answers": [
-            "6 a 10 Minutes"
-        ]
+            "21 à 25 Minutes"
+        ],
+      	"points": "*2"
     }
 ]

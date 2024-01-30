@@ -55,7 +55,17 @@ export default class UserService {
             }
 
             if (count === question.answers.length) {
-                score++;
+                switch (question.points[0]) {
+                    case '*':
+                        score *= parseInt(question.points[1]);
+                        break;
+                    case '-':
+                        score -= parseInt(question.points[1]);
+                        break;
+                    default:
+                        score += parseInt(question.points[1]);
+                        break;
+                }
             }
         }
 
