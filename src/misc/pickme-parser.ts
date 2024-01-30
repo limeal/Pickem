@@ -12,7 +12,7 @@ const createQuestion = async (
     lasts?: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] })[],
 ) => {
     let { ref, title, type, depend_on, regex, static_choices, style, choices, nb_answers, coordinates, parts } = question;
-    
+
     let qTitle = '';
     let qAIdx: number = -1;
     let cKey: string = '';
@@ -79,7 +79,7 @@ const createQuestion = async (
                     const values = qLink.choices[0].values;
                     for (const link_value of values) {
                         if (!static_choices)
-                        choices[link_value] = choices[link_value].sort(() => Math.random() - 0.5);
+                            choices[link_value] = choices[link_value].sort(() => Math.random() - 0.5);
                         qChoices.set(link_value.toLowerCase().replaceAll(/ /g, '_'), choices[link_value]);
                     }
                     break;
