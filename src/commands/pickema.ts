@@ -16,7 +16,7 @@ import { interactionManager } from 'registries/register_interactions';
 import ListFormsMessage from 'messages/ListFormsMessage';
 import tasks from 'registries/register_tasks';
 import ResultService from 'services/result.service';
-import { Form, UserResponse, UserSubmission } from '@prisma/client';
+import { Form, FormStatus, UserResponse, UserSubmission } from '@prisma/client';
 
 export default {
     data: new SlashCommandBuilder()
@@ -137,6 +137,11 @@ export default {
                         .setDescription('The user to regen the answer.')
                         .setRequired(true)
                 )
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('open')
+                .setDescription('Open a pickem.')
         )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
@@ -275,6 +280,40 @@ export default {
                 await interaction.deferReply({ ephemeral: true });
                 await ResultService.Create(channel, userR, formR, userRR);
                 return interaction.editReply({ content: `Regenerated answer for user ${userR.username} in pickem ${formR.title}` });
+            case 'open':
+                const oform = await FormService.GetCurrentForm();
+
+                if (!oform) return interaction.reply({ content: `No pickem found, use /pickema new <name>`, ephemeral: true });
+                if (oform?.status === FormStatus.OPEN) return interaction.reply({ content: `Pickem is already open`, ephemeral: true });
+
+                try {
+                    await prisma.form.update({
+                        where: {
+                            id: oform.id,
+                        },
+                        data: {
+                            status: FormStatus.CLOSED,
+                        },
+                    });
+                    return interaction.reply({ content: `Pickem is now open`, ephemeral: true });
+                } catch (err) { return interaction.reply({ content: `An error occured while opening the pickem`, ephemeral: true }); }
+            case 'close':
+                const cform = await FormService.GetCurrentForm();
+
+                if (!cform) return interaction.reply({ content: `No pickem found, use /pickema new <name>`, ephemeral: true });
+                if (cform?.status === FormStatus.CLOSED) return interaction.reply({ content: `Pickem is already closed`, ephemeral: true });
+
+                try {
+                    await prisma.form.update({
+                        where: {
+                            id: cform.id,
+                        },
+                        data: {
+                            status: FormStatus.CLOSED,
+                        },
+                    });
+                    return interaction.reply({ content: `Pickem is now open`, ephemeral: true });
+                } catch (err) { return interaction.reply({ content: `An error occured while closing the pickem`, ephemeral: true }); }
             default:
                 break;
 

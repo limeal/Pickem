@@ -133,7 +133,7 @@ export default class FormService {
         const fform = await prisma.form.findFirst({
             where: {
                 active: true,
-                status: FormStatus.OPEN,
+                status: FormStatus.CLOSED,
             },
             include: {
                 questions: {
@@ -144,7 +144,7 @@ export default class FormService {
             }
         });
 
-        if (!fform) return interaction.reply({ content: 'A form with that name does not exist/ is closed.', ephemeral: true });
+        if (!fform) return interaction.reply({ content: 'A form with that name does not exist/ is open.', ephemeral: true });
         await interaction.deferReply({ ephemeral: true });
         try {
             let filedata: { ref: number, answers: string[] }[] = await FormService.getFileData(file_loc);
@@ -181,18 +181,6 @@ export default class FormService {
                 })
             }
 
-
-
-            // CLose form
-            await prisma.form.update({
-                where: {
-                    id: fform.id,
-                },
-                data: {
-                    status: FormStatus.CLOSED,
-                },
-            });
-
             const userResponses = await prisma.userResponse.findMany({
                 where: {
                     formId: fform.id,
@@ -206,7 +194,6 @@ export default class FormService {
                 if (userResponse.status === UserResponseStatus.PENDING) continue;
 
                 try {
-                    console.log(userResponse.userId);
                     await UserService.UpdateScore(userResponse);
                 } catch (err) {
                     console.log(err);
