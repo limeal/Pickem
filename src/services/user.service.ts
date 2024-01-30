@@ -40,7 +40,7 @@ export default class UserService {
         })
 
         if (!form) throw 'An error occured, please contact an admin.';
-        if (userResponse.score >= 0) return;
+        if (userResponse.score > 0) return;
 
         let score = 0;
         for (const submission of userResponse.submissions) {
