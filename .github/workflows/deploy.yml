@@ -1,0 +1,31 @@
+name: Deploy and build
+
+on:
+  push:
+    branches: [
+      main
+    ]
+
+jobs:
+  deploy-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy and build
+        uses: appleboy/ssh-action@master
+        env:
+          REPO_LOC: /root/Pickme
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          envs: REPO_LOC
+          script: |
+            echo '#!/bin/bash' > deploy.sh
+            echo 'git -C $REPO_LOC pull' >> deploy.sh
+            echo 'docker compose up -d --build' >> deploy.sh
+            bash deploy.sh
+            rm -rf deploy.sh
