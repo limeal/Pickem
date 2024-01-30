@@ -10,6 +10,7 @@ interface IQuestion {
         }[];
     };
     type?: string;
+    static_choices: boolean;
     depend_on?: {
         index: number;
         rule: string;

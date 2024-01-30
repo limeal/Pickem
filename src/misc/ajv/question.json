@@ -61,6 +61,9 @@
         "style": {
             "type": "string"
         },
+        "static_choices": {
+            "type": "boolean"
+        },
         "choices": {
             "anyOf": [
                 {

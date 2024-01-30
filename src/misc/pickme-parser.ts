@@ -11,7 +11,7 @@ const createQuestion = async (
     parentId?: number,
     lasts?: (FormQuestion & { choices: FormQuestionChoice[], coordinates: FormQuestionCoord[] })[],
 ) => {
-    let { ref, title, type, depend_on, regex, style, choices, nb_answers, coordinates, parts } = question;
+    let { ref, title, type, depend_on, regex, static_choices, style, choices, nb_answers, coordinates, parts } = question;
     
     let qTitle = '';
     let qAIdx: number = -1;
@@ -77,8 +77,11 @@ const createQuestion = async (
                 case FormQuestionType.SELECT:
                     if (qLink.choices.length !== 1) throw new Error('Choices must have only one category');
                     const values = qLink.choices[0].values;
-                    for (const link_value of values)
+                    for (const link_value of values) {
+                        if (!static_choices)
+                        choices[link_value] = choices[link_value].sort(() => Math.random() - 0.5);
                         qChoices.set(link_value.toLowerCase().replaceAll(/ /g, '_'), choices[link_value]);
+                    }
                     break;
                 default:
                     throw new Error('Depend_on can only be used with select question');
@@ -87,7 +90,10 @@ const createQuestion = async (
             if (!choices || !Array.isArray(choices)) throw new Error('Answers does not exist / Must be an array');
             if (!choices?.length) throw new Error('Choices does not exist');
             // Shuffle choices
-            qChoices.set('default', choices.sort(() => Math.random() - 0.5));
+            if (!static_choices)
+                choices = choices.sort(() => Math.random() - 0.5);
+
+            qChoices.set('default', choices);
         }
     }
 
