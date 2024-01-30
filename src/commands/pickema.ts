@@ -347,7 +347,7 @@ export default {
                             status: FormStatus.CLOSED,
                         },
                     });
-                    return interaction.reply({ content: `Pickem is now open`, ephemeral: true });
+                    return interaction.reply({ content: `Pickem is now close`, ephemeral: true });
                 } catch (err) { return interaction.reply({ content: `An error occured while closing the pickem`, ephemeral: true }); }
             case 'whos':
                 const wform = await prisma.form.findFirst({ where: { active: true }, include: { questions: true } });
