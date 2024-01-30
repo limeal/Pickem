@@ -554,6 +554,9 @@ export default class FormService {
         return await prisma.form.findMany({
             include: {
                 cron: true,
+                questions: true,
+                categories: true,
+                responses: true
             }
         });
     }

@@ -1,15 +1,8 @@
-import { Form, FormCron } from "@prisma/client";
+import { Form, FormCategory, FormCron, FormQuestion, FormStatus, UserResponse } from "@prisma/client";
 import { EmbedBuilder, MessagePayloadOption, AttachmentBuilder, Colors, MessageCreateOptions } from "discord.js";
 import cronstrue from 'cronstrue';
 
-export default (forms: ({
-    cron: FormCron | null;
-    id: number;
-    title: string;
-    active: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-})[]) => ({
+export default (forms: (Form & { cron: FormCron | null, questions: FormQuestion[], categories: FormCategory[], responses: UserResponse[] })[]) => ({
     embeds: [
         new EmbedBuilder()
             .setTitle('Pick’em 🔮 - Forms')
@@ -18,7 +11,14 @@ export default (forms: ({
             .setFields(forms
                 .map(form => ({
                     name: form.title,
-                    value: `Active: ${form.active? 'Oui' : 'Non'}${form.cron?.cron ? `\nProgrammed: ${cronstrue.toString(form.cron?.cron)}` : ''}`,
+                    value:
+                        `Actuel: ${form.active ? 'Oui' : 'Non'}
+                        \nOuvert: ${form.status === FormStatus.OPEN ? 'Oui' : 'Non'}
+                        \nNombre de Questions: ${form.questions.length}
+                        \nNombre de Réponses: ${form.responses.length}
+                        \nCategories: ${form.categories.join(', ')}
+                        ${form.cron?.cron ? `\nProgrammer: ${cronstrue.toString(form.cron?.cron)}
+                        ` : ''}`,
                 }))
             )
     ]
