@@ -9,9 +9,15 @@ export default (form: Form, questions: FormQuestion[]) => ({
             .setTimestamp(Date.now())
             .setDescription(`List des questions du pickem ${form.title}`)
             .setFields(
-                questions.map((q, i) => ({
-                    name: `Question ${i + 1}`,
-                    value: q.title,
+                questions.map((q) => ({
+                    name: `Question ${q.ref}`,
+                    value: `
+                        Titre: ${q.title}
+                        \nType: ${q.type}
+                        \nNombre de réponses: ${q.nb_answers}
+                        ${q.answers.length > 0 ? `\nReponses: ${q.answers.join(', ')}` : ''}
+                        ${q.points.length > 0 ? `\nPoints: ${q.points}` : ''}
+                    `
                 }))
             )
     ]
