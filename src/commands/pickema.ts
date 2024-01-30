@@ -54,7 +54,7 @@ export default {
                     option
                         .setName('name')
                         .setDescription('The name of the pickem')
-                        .setRequired(true)
+                        .setRequired(false)
                 )
         )
         .addSubcommand(subcommand =>
