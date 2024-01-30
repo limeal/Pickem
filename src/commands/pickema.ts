@@ -206,6 +206,7 @@ export default {
                 const task = tasks.get(name5!);
                 if (!task) return await interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
                 task.stop();
+                tasks.delete(name5!);
                 return await interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
             case 'inject':
                 return await FormService.Inject(interaction, interaction.options.getString('file_loc')!, interaction.guild!);
