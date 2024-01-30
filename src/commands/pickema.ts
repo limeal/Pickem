@@ -143,6 +143,11 @@ export default {
                 .setName('open')
                 .setDescription('Open a pickem.')
         )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('close')
+                .setDescription('Close a pickem.')
+        )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
         switch (interaction.options.getSubcommand()) {
