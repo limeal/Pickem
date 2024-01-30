@@ -81,7 +81,11 @@ export default class ResultService {
                 respMessageId: message.id,
             },
         });
-        
-        return channel.send(RecapMessage(thread.id));
+
+        return channel.send(RecapMessage(thread.id)).then(m => {
+            setTimeout(() => {
+                m.channel.delete();
+            }, 60 * 1000);
+        });
     }
 }

@@ -7,6 +7,11 @@ export default (channelId: string) => ({
             .setTitle('Pick’em 🔮 - Recap')
             .setColor(Colors.DarkPurple)
             .setTimestamp(Date.now())
-            .setDescription(`Recapitulatif disponible ici <#${channelId}>`)
+            .setDescription(
+                `Recapitulatif disponible ici <#${channelId}>\n\n
+                Suppression du salon dans **60 seconds**\n\n
+                **Merci d'avoir participé !**
+                `
+            )
     ]
 })
