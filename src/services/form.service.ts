@@ -496,7 +496,7 @@ export default class FormService {
         return await prisma.form.findFirst({
             where: {
                 active: true,
-            }
+            },
         });
     }
 

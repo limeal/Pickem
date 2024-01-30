@@ -18,6 +18,7 @@ import tasks from 'registries/register_tasks';
 import ResultService from 'services/result.service';
 import { Form, FormStatus, UserResponse, UserSubmission } from '@prisma/client';
 import ListQuestionsMessage from 'messages/ListQuestionsMessage';
+import WhosMessage from 'messages/WhosMessage';
 
 export default {
     data: new SlashCommandBuilder()
@@ -159,6 +160,11 @@ export default {
             subcommand
                 .setName('close')
                 .setDescription('Close a pickem.')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('whos')
+                .setDescription('Whos in a pickem.')
         )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
@@ -343,6 +349,19 @@ export default {
                     });
                     return interaction.reply({ content: `Pickem is now open`, ephemeral: true });
                 } catch (err) { return interaction.reply({ content: `An error occured while closing the pickem`, ephemeral: true }); }
+            case 'whos':
+                const wform = await prisma.form.findFirst({ where: { active: true }, include: { questions: true } });
+
+                if (!wform) return interaction.reply({ content: `No pickem found, use /pickema new <name>`, ephemeral: true });
+                if (wform?.status!== FormStatus.OPEN) return interaction.reply({ content: `Pickem is not open`, ephemeral: true });
+
+                const users = await prisma.userResponse.findMany({
+                    where: {
+                        formId: wform.id,
+                    }
+                });
+
+                return interaction.reply(WhosMessage(wform, users));
             default:
                 break;
 
