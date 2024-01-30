@@ -297,7 +297,7 @@ export default {
                             id: oform.id,
                         },
                         data: {
-                            status: FormStatus.CLOSED,
+                            status: FormStatus.OPEN,
                         },
                     });
                     return interaction.reply({ content: `Pickem is now open`, ephemeral: true });
