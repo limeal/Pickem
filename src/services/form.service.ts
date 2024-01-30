@@ -443,21 +443,29 @@ export default class FormService {
             },
         });
 
-        // Delete all responses
-        await prisma.userResponse.deleteMany();
-
         try {
             if (config) {
+
+                const responses = await prisma.userResponse.findMany({
+                    select: {
+                        channelId: true,
+                    }
+                });
+
                 const categoryForm = await guild.channels.fetch(config?.formCategoryId);
 
                 if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory)
                     throw 'An error occured, please contact an admin.';
 
                 categoryForm.children.cache.forEach(async (channel: any) => {
-                    await channel.delete();
+                    if (responses.some((r: any) => r.channelId === channel.id))
+                        await channel.delete();
                 });
             }
         } catch (err) { }
+        
+        // Delete all responses
+        await prisma.userResponse.deleteMany();
 
 
         const newForm = await prisma.form.findFirst({
@@ -522,11 +530,19 @@ export default class FormService {
 
         try {
             if (config) {
+
+                const responses = await prisma.userResponse.findMany({
+                    select: {
+                        channelId: true,
+                    }
+                });
+
                 const categoryForm = await guild.channels.fetch(config?.formCategoryId);
 
                 if (categoryForm && categoryForm.type === ChannelType.GuildCategory)
                     categoryForm.children.cache.forEach(async (channel: any) => {
-                        await channel.delete();
+                        if (responses.some((r: any) => r.channelId === channel.id))
+                            await channel.delete();
                     });
             }
         } catch (err) { }
