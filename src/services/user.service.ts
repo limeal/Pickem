@@ -13,8 +13,14 @@ export default class UserService {
 
         if (!userResponse) throw 'An error occured, please contact an admin.';
 
-        const channelForm = await guild.channels.fetch(userResponse.channelId);
-        if (channelForm) await channelForm.delete();
+        try {
+            const channelForm = await guild.channels.fetch(userResponse.channelId);
+            if (channelForm) await channelForm.delete();
+        } catch (err: any) { }
+        try {
+            const respthread = await guild.channels.fetch(userResponse.respThreadId);
+            if (respthread) await respthread.delete();
+        } catch (err: any) { }
 
         await prisma.userResponse.deleteMany({
             where: {

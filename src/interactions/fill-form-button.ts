@@ -34,7 +34,7 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
     async setupChannel(guild: Guild, config: any, interaction: Interaction) {
         // Create a new channel in the category
         const newChannel = await guild.channels.create({
-            name: `ticket-${interaction.user.username}`,
+            name: `「🔮」Ticket-${interaction.user.username}`,
             type: ChannelType.GuildText,
             parent: config?.formCategoryId,
             permissionOverwrites: [
@@ -59,13 +59,13 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
         });
 
         if (!newChannel) {
-            throw 'Could not create channel.';
+            throw 'Une erreur est survenue lors de la création du nouveau salon';
         }
 
         // Send message in the channel
         const payload = FillFormMessage();
 
-        if (!payload) throw 'Could not create embed.';
+        if (!payload) throw 'Une erreur est survenue lors de la création du message';
 
         return {
             channel: newChannel, payload: {
@@ -83,6 +83,7 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
         // Get config from database
         const guild = interaction.guild!;
 
+        await interaction.deferReply({ ephemeral: true });
         const config = await prisma.config.findFirst({
             where: {
                 id: 0,
@@ -91,9 +92,8 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
 
         if (!config) {
             // If config is not set, reply to user to set it up
-            await interaction.reply({
-                content: 'Pickem is not set up yet, please run `/pickem setup`',
-                ephemeral: true,
+            await interaction.editReply({
+                content: 'Aucun config trouver, utiliser `/pickema setup`'
             });
             return;
         }
@@ -107,17 +107,31 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
 
         if (!form) {
             // If no form is active, reply to user to set it up
-            return await interaction.reply({
-                content: 'No form is active, please run `/pickem new <name> <file>` or `/pickem set <name>`',
-                ephemeral: true,
+            return await interaction.editReply({
+                content: 'Aucun formulaire n\'est activer, utiliser `/pickema new <name> <file>` ou `/pickema set <name>`'
             });
         }
 
         if (form.status === FormStatus.CLOSED) {
             // If form is closed, reply to user to set it up
-            return await interaction.reply({
-                content: 'Form is closed !',
-                ephemeral: true,
+            return await interaction.editReply({
+                content: 'Le formulaire est clos!'
+            });
+        }
+
+        const userResponse = await prisma.userResponse.findFirst({
+            where: {
+                userId: interaction.user.id,
+            },
+            select: {
+                channelId: true,
+                status: true,
+            },
+        });
+
+        if (userResponse) {
+            return await interaction.editReply({
+                content: `Votre soumission est actuellement ${userResponse?.status === UserResponseStatus.PENDING ? `en cours dans <#${userResponse.channelId}>.` : 'terminer.'}.`
             });
         }
 
@@ -136,9 +150,8 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
             });
 
             // Summon a form question in the channel
-            await interaction.reply({
-                content: `New form created in <#${res.channel.id}>`,
-                ephemeral: true,
+            await interaction.editReply({
+                content: `Votre formulaire: <#${res.channel.id}>`
             });
 
             return res.channel.send(res.payload);
@@ -146,37 +159,9 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
             console.error(error?.code);
             res?.channel?.delete();
             if (error.code && error.code === '10003') return;
-            if (error.code && error.code === 'P2002') {
-                // Find userResponse status
-                const userResponse = await prisma.userResponse.findFirst({
-                    where: {
-                        userId: interaction.user.id,
-                    },
-                    select: {
-                        channelId: true,
-                        status: true,
-                    },
-                });
-
-                if (!userResponse) {
-                    await interaction.reply({
-                        content: 'Could not find user response, please try again.',
-                        ephemeral: true,
-                    });
-                    return;
-                }
-
-                return await interaction.reply({
-                    content: `You'r submission is currently ${userResponse?.status}${userResponse?.status === UserResponseStatus.PENDING ? ` in <#${userResponse.channelId}>` : ''}.`,
-                    ephemeral: true,
-                });
-                return;
-            } else {
-                await interaction.reply({
-                    content: 'An error occured, please try again.',
-                    ephemeral: true,
-                });
-            }
+            return await interaction.editReply({
+                content: 'Une erreur est survenue, merci de réessayer plus tard.'
+            });
         }
     }
 

@@ -54,24 +54,32 @@ export default (props: InteractionProps) => new (class SetupModal extends BaseMo
 
         let channel = interaction.channel;
         if (channelToSent) {
-            const tchannel = await guild.channels.fetch(channelToSent);
+            try {
+                const tchannel = await guild.channels.fetch(channelToSent);
 
-            if (!channel || channel.type !== ChannelType.GuildText)
-                return await interaction.reply({ content: 'An error occured, please try again.' });
+                if (!channel || channel.type !== ChannelType.GuildText)
+                    return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
 
-
-            channel = tchannel as TextChannel;
+                channel = tchannel as TextChannel;
+            } catch (error: any) {
+                return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
+            }
         }
 
         if (!channel)
-            return await interaction.reply({ content: 'An error occured, please try again.' });
+            return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
 
 
-        // Check if categoryForm is valid
-        const category = await guild.channels.fetch(categoryForm);
-        // check if it's a category
-        if (!category || category.type !== ChannelType.GuildCategory || category.id !== categoryForm)
-            return await interaction.reply({ content: 'Not a valid category ID or this is NOT a category.' });
+        let category = null;
+        try {
+            // Check if categoryForm is valid
+            category = await guild.channels.fetch(categoryForm);
+            // check if it's a category
+            if (!category || category.type !== ChannelType.GuildCategory || category.id !== categoryForm)
+                throw 'Une erreur est survenue, config invalide!';
+        } catch (error: any) {
+            return interaction.reply({ content: error });
+        }
 
         // Check if config already exist
         const config = await prisma.config.findFirst({
@@ -83,26 +91,28 @@ export default (props: InteractionProps) => new (class SetupModal extends BaseMo
         let message = null;
         if (config) {
             // If config is already set, update it
-            const target_channel = await guild.channels.fetch(config.formChannelId);
-            if (!target_channel || target_channel.type !== ChannelType.GuildText)
-                return await interaction.reply({ content: 'An error occured, please try again.' });
-            const tmessage = await target_channel.messages.fetch(config.formMessageId);
-            if (!tmessage)
-                return await interaction.reply({ content: 'An error occured, please try again.' });
-            if (channel.id === target_channel.id) {
-                // Update message
-                message = tmessage;
-            } else {
-                // Delete old message
-                await tmessage.delete();
+            try {
+                const target_channel = await guild.channels.fetch(config.formChannelId);
+                if (!target_channel || target_channel.type !== ChannelType.GuildText)
+                    return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
+                const tmessage = await target_channel.messages.fetch(config.formMessageId);
+                if (!tmessage)
+                    return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
+                if (channel.id === target_channel.id) {
+                    // Update message
+                    message = tmessage;
+                } else {
+                    // Delete old message
+                    await tmessage.delete();
+                }
+            } catch (error: any) {
+                return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
             }
         }
 
         const payload = SetupModalMessage();
 
-        if (!payload) {
-            await interaction.reply({ content: 'An error occured, please try again.' });
-        }
+        if (!payload) return interaction.reply({ content: 'Une erreur est survenue, veuillez reessayer!' });
 
         const data = {
             ...payload,

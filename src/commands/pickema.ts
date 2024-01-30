@@ -2,6 +2,8 @@ import {
     SlashCommandBuilder,
     ChatInputCommandInteraction,
     PermissionFlagsBits,
+    ChannelType,
+    User,
 } from 'discord.js';
 import cron from 'node-cron';
 
@@ -14,6 +16,7 @@ import { interactionManager } from 'registries/register_interactions';
 import ListFormsMessage from 'messages/ListFormsMessage';
 import tasks from 'registries/register_tasks';
 import ResultService from 'services/result.service';
+import { Form, UserResponse, UserSubmission } from '@prisma/client';
 
 export default {
     data: new SlashCommandBuilder()
@@ -124,6 +127,17 @@ export default {
                         .setRequired(true)
                 )
         )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('regen')
+                .setDescription('Regenerate answer of a user.')
+                .addUserOption(option =>
+                    option
+                        .setName('user')
+                        .setDescription('The user to regen the answer.')
+                        .setRequired(true)
+                )
+        )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
         switch (interaction.options.getSubcommand()) {
@@ -134,41 +148,52 @@ export default {
                 return await FormService.Create(interaction, name!, qFile!, interaction.guild!);
             case 'list':
                 const forms = await FormService.GetAll();
-                if (forms.length === 0) return await interaction.reply('No Pickem found, use /pickema new <name>');
-                return await interaction.reply(ListFormsMessage(forms));
+                if (forms.length === 0) return interaction.reply('No Pickem found, use /pickema new <name>');
+                return interaction.reply(ListFormsMessage(forms));
             case 'delete':
                 const name2 = interaction.options.getString('name');
                 try {
                     await FormService.Delete(name2!, interaction.guild!);
-                    return await interaction.reply({ content: `Deleted pickem with name: ${name2}`, ephemeral: true });
+                    return interaction.reply({ content: `Deleted pickem with name: ${name2}`, ephemeral: true });
                 } catch (error: any) {
-                    return await interaction.reply({ content: `Pickem with name ${name2}, does not exist.`, ephemeral: true });
+                    return interaction.reply({ content: `Pickem with name ${name2}, does not exist.`, ephemeral: true });
                 }
             case 'set':
                 const name3 = interaction.options.getString('name');
                 try {
                     await FormService.Switch(name3!, interaction.guild!);
-                    return await interaction.reply({ content: `Activate pickem with name ${name3}`, ephemeral: true });
+                    return interaction.reply({ content: `Activate pickem with name ${name3}`, ephemeral: true });
                 } catch (error: any) {
-                    return await interaction.reply({ content: `Pickem with name ${name3}, does not exist.`, ephemeral: true });
+                    return interaction.reply({ content: `Pickem with name ${name3}, does not exist.`, ephemeral: true });
                 }
             case 'setup':
                 const config = await prisma.config.findFirst();
                 if (config)
-                    return await interaction.reply({ content: `Pickem already setup, use /pickema reset to reset the config`, ephemeral: true });
-                return await interaction.showModal(interactionManager.Get('setup-modal')!.unwrap());
+                    return interaction.reply({ content: `Pickem already setup, use /pickema reset to reset the config`, ephemeral: true });
+                return interaction.showModal(interactionManager.Get('setup-modal')!.unwrap());
             case 'reset':
-                const { count } = await prisma.config.deleteMany();
-                if (count === 0)
-                    return await interaction.reply({ content: `Config not found, use /pickema setup`, ephemeral: true });
-                return await interaction.reply({ content: `Config successfully reset`, ephemeral: true });
+                const config2 = await prisma.config.findFirst();
+                if (!config2)
+                    return interaction.reply({ content: `Config not found, use /pickema setup`, ephemeral: true });
+
+                try {
+                    const messageChannel = await interaction.guild?.channels.fetch(config2.formChannelId);
+                    if (messageChannel && messageChannel.type === ChannelType.GuildText) {
+                        const message = await messageChannel.messages.fetch(config2.formMessageId);
+                        if (message) await message.delete();
+                    }
+                } catch (error: any) { }
+
+                await prisma.config.deleteMany();
+                return interaction.reply({ content: `Config successfully reset`, ephemeral: true });
             case 'clear':
                 const user = interaction.options.getUser('user') || interaction.user;
+                await interaction.deferReply({ ephemeral: true });
                 try {
                     await UserService.Clear(user, interaction.guild!);
-                    return await interaction.reply({ content: `Clear user ${user.username} response in pickem`, ephemeral: true });
+                    return interaction.editReply({ content: `Clear user ${user.username} response in pickem` });
                 } catch (error: any) {
-                    return await interaction.reply({ content: `An error occurred while resetting user ${user.username} response in pickem`, ephemeral: true });
+                    return interaction.editReply({ content: `User ${user.username} response not exist in pickem` });
                 }
             case 'program':
                 // Create a repetitive task
@@ -196,20 +221,41 @@ export default {
                     }));
 
 
-                    return await interaction.reply({ content: `Programmed pickem with name ${name4}`, ephemeral: true });
+                    return interaction.reply({ content: `Programmed pickem with name ${name4}`, ephemeral: true });
                 } catch (error: any) {
-                    return await interaction.reply({ content: `An error occurred while programming pickem with name ${name4}`, ephemeral: true });
+                    return interaction.reply({ content: `An error occurred while programming pickem with name ${name4}`, ephemeral: true });
                 }
             case 'unprogram':
                 const name5 = interaction.options.getString('name');
 
                 const task = tasks.get(name5!);
-                if (!task) return await interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
+                if (!task) return interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
                 task.stop();
                 tasks.delete(name5!);
-                return await interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
+                return interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
             case 'inject':
-                return await FormService.Inject(interaction, interaction.options.getString('file_loc')!, interaction.guild!);
+                return FormService.Inject(interaction, interaction.options.getString('file_loc')!);
+            case 'regen':
+                const userR: User = interaction.options.getUser('user') || interaction.user;
+                const formR: Form | null = await FormService.GetCurrentForm();
+                if (!formR) return interaction.reply({ content: `No pickem found, use /pickema new <name>`, ephemeral: true });
+                const userRR: (UserResponse & { submissions: UserSubmission[] }) | null = await prisma.userResponse.findFirst({
+                    where: {
+                        userId: userR.id,
+                        formId: formR.id,
+                    },
+                    include: {
+                        submissions: true
+                    }
+                });
+                if (!userRR) return interaction.reply({ content: `No response found for user ${userR.username} in pickem ${formR.title}`, ephemeral: true });
+
+                const channel = interaction.channel;
+                if (!channel || channel.type != ChannelType.GuildText) return interaction.reply({ content: `Channel not found.`, ephemeral: true });
+
+                await interaction.deferReply({ ephemeral: true });
+                await ResultService.Create(channel, userR, formR, userRR);
+                return interaction.editReply({ content: `Regenerated answer for user ${userR.username} in pickem ${formR.title}` });
             default:
                 break;
 

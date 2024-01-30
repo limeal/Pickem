@@ -3,15 +3,15 @@ import { AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildBased
 import Jimp from "jimp"
 
 import prisma from "../prisma"
-import ResultMessage from "messages/ResultMessage"
+import RecapMessage from "messages/RecapMessage"
 
 const ResultImagePath = 'assets/images/response.jpg'
 const FontPath = 'assets/fonts/Bebas.fnt'
 
 export default class ResultService {
-    public static async Create(interaction: MessageComponentInteraction | ModalSubmitInteraction | ChatInputCommandInteraction, user: User, form: Form, response: (UserResponse & { submissions: UserSubmission[] })) {
+    public static async Create(channel: TextChannel, user: User, form: Form, response: (UserResponse & { submissions: UserSubmission[] })) {
 
-        const guild = interaction.guild!;
+        const guild = channel.guild!;
 
         const resultChannel = await guild.channels.cache.get(form.resultChannelId) as TextChannel;
 
@@ -26,10 +26,10 @@ export default class ResultService {
 
         const image = await Jimp.read(ResultImagePath);
         if (!image)
-            return await interaction.reply({ content: 'An error occured, please try again.' });
+            return channel.send({ content: 'An error occured, please try again.' });
         const font = await Jimp.loadFont(FontPath);
         if (!font)
-            return await interaction.reply({ content: 'An error occured, please try again.' });
+            return channel.send({ content: 'An error occured, please try again.' });
 
         const size = 180;
         const userAvatar = await Jimp.read(user.displayAvatarURL({ extension: 'png', size: 256 }));
@@ -42,11 +42,11 @@ export default class ResultService {
 
         for (let i = 0; i < response.submissions.length; i++) {
             let question = questions.find(question => question.id === response.submissions[i].questionId);
-            if (!question) return await interaction.reply({ content: 'An error occured, please try again.' });
-            if (response.submissions[i].answers.length !== question.coordinates.length) return await interaction.reply({ content: 'An error occured, please try again.' });
+            if (!question) return channel.send({ content: 'An error occured, please try again.' });
+            if (response.submissions[i].answers.length !== question.coordinates.length) return await channel.send({ content: 'An error occured, please try again.' });
             for (let j = 0; j < response.submissions[i].answers.length; j++) {
                 let coordinate = question.coordinates[j];
-                if (!coordinate) return await interaction.reply({ content: 'An error occured, please try again.' });
+                if (!coordinate) return channel.send({ content: 'An error occured, please try again.' });
                 image.print(font, coordinate.x, coordinate.y, response.submissions[i].answers[j].replaceAll('_', ' '), coordinate.width, coordinate.height);
             }
         }
@@ -64,13 +64,14 @@ export default class ResultService {
 
         }
 
-        await interaction.reply({ content: `Result available in <#${thread.id}>`, ephemeral: true, fetchReply: true  });
-        if (!message)
-            message = await thread.send(ResultMessage(await image.getBufferAsync(Jimp.MIME_PNG), user, response.score, response.submissions.length))
-        else
-            await message.edit(ResultMessage(await image.getBufferAsync(Jimp.MIME_PNG), user, response.score, response.submissions.length))
+        const attachmentFile = new AttachmentBuilder(await image.getBufferAsync(Jimp.MIME_PNG));
 
-        return await prisma.userResponse.update({
+        if (!message)
+            message = await thread.send({ files: [attachmentFile] })
+        else
+            await message.edit({ files: [attachmentFile] })
+
+        await prisma.userResponse.update({
             where: {
                 id: response.id,
                 userId: user.id,
@@ -80,5 +81,7 @@ export default class ResultService {
                 respMessageId: message.id,
             },
         });
+        
+        return channel.send(RecapMessage(thread.id));
     }
 }

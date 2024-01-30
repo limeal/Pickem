@@ -56,6 +56,8 @@ export default class FormService {
     }
 
     public static async Create(interaction: CommandInteraction, form_name: string, file_loc: string, guild: Guild) {
+        const config = await prisma.config.findFirst();
+        if (!config) throw new Error('An error occured, please contact an admin.');
 
         const fform = await prisma.form.findFirst({
             where: {
@@ -64,6 +66,7 @@ export default class FormService {
         });
 
         if (fform) return interaction.reply({ content: 'A form with that name already exists.', ephemeral: true });
+        await interaction.deferReply({ ephemeral: true });
         try {
             let filedata: any = await FormService.getFileData(file_loc);
 
@@ -71,7 +74,7 @@ export default class FormService {
             // Check if file is valid
             const valid = validateCreate(filedata);
             if (!valid) {
-                return interaction.reply({ content: validateCreate.errors?.map((error: any) => error.message).join('\n') || 'Invalid file.', ephemeral: true })
+                return interaction.editReply({ content: validateCreate.errors?.map((error: any) => error.message).join('\n') || 'Invalid file.' })
             }
 
             // Count number of forms in guild
@@ -84,15 +87,16 @@ export default class FormService {
 
             // Create Result channel
             const resultChannel = await guild.channels.create({
-                name: `${form_name}-results`,
+                name: `「🔮」Pickem-${form_name}`,
                 type: ChannelType.GuildText,
+                parent: config.formCategoryId,
                 permissionOverwrites: [
                     {
                         id: guild.id,
                         deny: denyPermissionOverwrites,
                     },
                 ],
-            })
+            });
 
             // Create empty form
             let form = null;
@@ -106,7 +110,7 @@ export default class FormService {
                 });
 
                 await pickmeParser(form.id, filedata as any);
-                return interaction.reply({ content: `Form ${form_name} created.`, ephemeral: true });
+                return interaction.editReply({ content: `Form ${form_name} created.` });
             } catch (error) {
                 // Delete form if error
                 if (form) {
@@ -117,15 +121,15 @@ export default class FormService {
                     });
                 }
 
-                return interaction.reply({ content: `An error occurred while creating form ${form_name}`, ephemeral: true });
+                return interaction.editReply({ content: `An error occurred while creating form ${form_name}` });
             }
 
             return form;
 
-        } catch (error: any) { return interaction.reply({ content: error, ephemeral: true }); }
+        } catch (error: any) { return interaction.editReply({ content: error }); }
     }
 
-    public static async Inject(interaction: CommandInteraction, file_loc: string, guild: Guild) {
+    public static async Inject(interaction: CommandInteraction, file_loc: string) {
         const fform = await prisma.form.findFirst({
             where: {
                 active: true,
@@ -141,6 +145,7 @@ export default class FormService {
         });
 
         if (!fform) return interaction.reply({ content: 'A form with that name does not exist/ is closed.', ephemeral: true });
+        await interaction.deferReply({ ephemeral: true });
         try {
             let filedata: { ref: number, answers: string[] }[] = await FormService.getFileData(file_loc);
 
@@ -164,7 +169,7 @@ export default class FormService {
                     }
                 }
 
-                if (!ok) return await interaction.reply({ content: `Invalid answer for question ${question.title}.`, ephemeral: true });
+                if (!ok) return await interaction.editReply({ content: `Invalid answer for question ${question.title}.` });
 
                 await prisma.formQuestion.update({
                     where: {
@@ -208,8 +213,11 @@ export default class FormService {
                 }
             }
 
-            return await interaction.reply({ content: `Injection successful.`, ephemeral: true });
-        } catch (error: any) { return interaction.reply({ content: error, ephemeral: true }); }
+            return await interaction.editReply({ content: `Injection successful.` });
+        } catch (error: any) {
+            console.log(error)
+            return interaction.editReply({ content: `Une erreur est survenue.` });
+        }
     }
 
     public static async InvokeNextQuestion({
@@ -265,6 +273,9 @@ export default class FormService {
                 include: {
                     categories: true,
                     questions: {
+                        orderBy: {
+                            id: 'asc'
+                        },
                         include: {
                             choices: true,
                             questions: true,
@@ -277,6 +288,7 @@ export default class FormService {
             if (form.status === FormStatus.CLOSED) throw 'This form is closed.';
 
             const nextQuestion = form?.questions.at(userResponse.nextIndex);
+            console.log(nextQuestion);
             if (!nextQuestion) {
                 // Update the status to COMPLETE For UserResponse
                 await prisma.userResponse.update({
@@ -290,13 +302,13 @@ export default class FormService {
                 });
 
                 if (interaction && !userResponse?.submissions) {
-                    return await interaction.reply({
+                    return interaction.reply({
                         content: 'An error has occured !',
                         ephemeral: true,
                     })
                 }
 
-                return await ResultService.Create(interaction!, user, form, userResponse);
+                return await ResultService.Create(gChannel!, user, form, userResponse);
             }
 
             if (interaction) await interaction.deferUpdate();
@@ -305,8 +317,8 @@ export default class FormService {
                 // Send category image
                 const tcategory = form?.categories.find((c: any) => c.id === nextQuestionCategory);
                 if (!tcategory) {
-                    return await gChannel!.send({
-                        content: 'An error occured, please contact an admin.',
+                    return gChannel!.send({
+                        content: '(IJ1) - Une erreur est survenue, veuillez reessayer!',
                     })
                 }
 
@@ -371,34 +383,35 @@ export default class FormService {
                     .then(async () => {
                         if (nextQuestion.type !== FormQuestionType.MULTIPART) return;
                         return await FormService.InvokeNextQuestion({ user, channel: gChannel, imanager })
-                    }).catch(async (error) => {
-                        return await gChannel!.send({
-                            content: 'An error occured, please contact an admin.',
-                        })
-                    })
+                    }).catch(async (error) => gChannel!.send({ content: '(IJ2) - Une erreur est survenue, veuillez reessayer!' }))
 
             if (nextQuestion.linkedId) {
+                console.log(nextQuestion.linkedId)
                 const linkSubmissionMessage = userResponse?.submissions?.find((s: any) => s.questionId === nextQuestion.linkedId);
                 if (!linkSubmissionMessage) {
-                    return await gChannel!.send({
-                        content: 'An error occured, please contact an admin.',
+                    return gChannel!.send({
+                        content: '(IJ3) - Une erreur est survenue, veuillez reessayer!',
                     })
                 }
 
-                return gChannel!.messages.fetch(linkSubmissionMessage.messageId).then((message) => handleMultipart(message.edit(payload)));
+                try {
+                    return gChannel!.messages.fetch(linkSubmissionMessage.messageId).then((message) => handleMultipart(message.edit(payload)));
+                } catch (error) {
+                    return handleMultipart(gChannel!.send(payload));
+                }
             }
 
             return handleMultipart(gChannel!.send(payload));
         } catch (error: any) {
             console.log(error);
             if (interaction)
-                return await interaction.reply({
-                    content: 'An error occured, please contact an admin.',
+                return interaction.reply({
+                    content: '(IJ4) - Une erreur est survenue, veuillez reessayer!',
                     ephemeral: true,
                 })
 
-            return await gChannel!.send({
-                content: 'An error occured, please contact an admin.'
+            return gChannel!.send({
+                content: '(IJ5) -Une erreur est survenue, veuillez reessayer!'
             })
         }
     }
@@ -433,17 +446,19 @@ export default class FormService {
         // Delete all responses
         await prisma.userResponse.deleteMany();
 
-        if (config) {
-            const categoryForm = await guild.channels.fetch(config?.formCategoryId);
+        try {
+            if (config) {
+                const categoryForm = await guild.channels.fetch(config?.formCategoryId);
 
-            if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory)
-                throw 'An error occured, please contact an admin.';
+                if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory)
+                    throw 'An error occured, please contact an admin.';
 
-            categoryForm.children.cache.forEach(async (channel: any) => {
-                await channel.delete();
-            });
+                categoryForm.children.cache.forEach(async (channel: any) => {
+                    await channel.delete();
+                });
+            }
+        } catch (err) { }
 
-        }
 
         const newForm = await prisma.form.findFirst({
             where: {
@@ -453,21 +468,23 @@ export default class FormService {
 
         if (!newForm) throw 'An error occured, please contact an admin.';
 
-        let resultChannel = await guild.channels.fetch(newForm.resultChannelId);
-        if (resultChannel) {
-            if (resultChannel.type !== ChannelType.GuildText)
-                throw 'An error occured, please contact an admin.';
+        try {
+            let resultChannel = await guild.channels.fetch(newForm.resultChannelId);
+            if (resultChannel) {
+                if (resultChannel.type !== ChannelType.GuildText)
+                    throw 'An error occured, please contact an admin.';
 
-            resultChannel = await resultChannel.edit({
-                permissionOverwrites: [
-                    {
-                        id: guild.id,
-                        deny: this.DenyPermissionOverwrites,
-                        allow: [PermissionFlagsBits.ViewChannel]
-                    }
-                ]
-            })
-        }
+                resultChannel = await resultChannel.edit({
+                    permissionOverwrites: [
+                        {
+                            id: guild.id,
+                            deny: this.DenyPermissionOverwrites,
+                            allow: [PermissionFlagsBits.ViewChannel]
+                        }
+                    ]
+                })
+            }
+        } catch (err: any) { }
 
         return await prisma.form.update({
             where: {
@@ -483,7 +500,7 @@ export default class FormService {
         return await prisma.form.findFirst({
             where: {
                 active: true,
-            },
+            }
         });
     }
 
@@ -498,24 +515,21 @@ export default class FormService {
         });
 
         if (!form) throw 'An error occured, please contact an admin.';
-        let resultChannel = await guild.channels.fetch(form.resultChannelId);
+        try {
+            let resultChannel = await guild.channels.fetch(form.resultChannelId);
+            if (resultChannel && resultChannel.type === ChannelType.GuildText) await resultChannel.delete();
+        } catch (err) { }
 
-        if (config) {
-            const categoryForm = await guild.channels.fetch(config?.formCategoryId);
+        try {
+            if (config) {
+                const categoryForm = await guild.channels.fetch(config?.formCategoryId);
 
-            if (!categoryForm || categoryForm.type !== ChannelType.GuildCategory)
-                throw 'An error occured, please contact an admin.';
-
-            categoryForm.children.cache.forEach(async (channel: any) => {
-                await channel.delete();
-            });
-        }
-
-        if (resultChannel) {
-            if (resultChannel.type !== ChannelType.GuildText)
-                throw 'An error occured, please contact an admin.';
-            await resultChannel.delete();
-        }
+                if (categoryForm && categoryForm.type === ChannelType.GuildCategory)
+                    categoryForm.children.cache.forEach(async (channel: any) => {
+                        await channel.delete();
+                    });
+            }
+        } catch (err) { }
 
         return await prisma.form.delete({
             where: {

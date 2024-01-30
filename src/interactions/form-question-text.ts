@@ -55,7 +55,7 @@ export default (props: InteractionProps) => new (class FormQuestionText extends 
 
         // Check if answer match the regex
         if (!answer.match(this.question.regex))
-            return await interaction.reply({ content: 'Invalid answer, please retry.', ephemeral: true });
+            return interaction.reply({ content: 'Réponse impossible, merci de reessayer.', ephemeral: true });
 
         // Check if values is the same as answers
         let count = 0;
@@ -103,8 +103,8 @@ export default (props: InteractionProps) => new (class FormQuestionText extends 
                         props.manager.Get('reload-question-button')!.unwrap())
                 ]
             });
-            return await interaction.reply({
-                content: 'An error occured, please try again by clicking on the button below.',
+            return interaction.reply({
+                content: 'Une erreur est survenue, veuillez réessayer en cliquant sur le bouton ci-dessus.',
                 ephemeral: true,
             });
         }

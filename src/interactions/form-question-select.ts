@@ -89,8 +89,8 @@ export default (props: InteractionProps) => new (class FormQuestionSelect extend
                         props.manager.Get('reload-question-button')!.unwrap())
                     ]
                 });
-            return await interaction.reply({
-                content: 'An error occured, please try again by clicking on the button below.',
+            return interaction.reply({
+                content: 'Une erreur est survenue, veuillez réessayer en cliquant sur le bouton ci-dessus.',
                 ephemeral: true,
             });
         }

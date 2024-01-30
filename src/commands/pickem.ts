@@ -46,17 +46,19 @@ export default {
                     .setColor(Colors.Blue)
                     .setTimestamp(new Date())
 
-                if (best_users.length > 0) {
-                    for (let i = 0; i < best_users.length; i++) {
-                        const u = await interaction.guild?.members.fetch(best_users[i].userId);
-                        embed.addFields({
-                            name: `${i + 1}. ${u?.displayName}`,
-                            value: `${best_users[i].score} points`
-                        })
+                try {
+                    if (best_users.length > 0) {
+                        for (let i = 0; i < best_users.length; i++) {
+                            const u = await interaction.guild?.members.fetch(best_users[i].userId);
+                            embed.addFields({
+                                name: `${i + 1}. ${u?.displayName}`,
+                                value: `${best_users[i].score} points`
+                            })
+                        }
+                    } else {
+                        embed.setDescription('There are no users in the leaderboard');
                     }
-                } else {
-                    embed.setDescription('There are no users in the leaderboard');
-                }
+                } catch (err) { return interaction.reply({ content: 'An error occured, please contact an admin.', ephemeral: true }); }
 
                 return interaction.reply({ embeds: [embed] });
             case 'score':
@@ -65,9 +67,9 @@ export default {
                     const response = await UserService.Get(user);
                     const form = await FormService.GetCurrentForm();
 
-                    if (form?.status === FormStatus.CLOSED)
-                        return interaction.reply({ content: 'The form is closed.', ephemeral: true });
-                    
+                    if (form?.status === FormStatus.OPEN)
+                        return interaction.reply({ content: 'The form is open.', ephemeral: true });
+
                     return interaction.reply({ content: `<@${user.id}> has ${response.score} points.`, ephemeral: true });
                 } catch (err: any) {
                     interaction.reply({ content: `<@${user.id}> has not yet complete the form!`, ephemeral: true });
