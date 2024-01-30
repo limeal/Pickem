@@ -16,6 +16,12 @@ export default {
             subcommand
                 .setName('leaderboard')
                 .setDescription('Display the leaderboard')
+                .addIntegerOption(option =>
+                    option
+                        .setName('limit')
+                        .setDescription('The number of users to display')
+                        .setRequired(false)
+                )
         )
         .addSubcommand(subcommand =>
             subcommand
@@ -32,7 +38,8 @@ export default {
     execute: async (interaction: ChatInputCommandInteraction) => {
         switch (interaction.options.getSubcommand()) {
             case 'leaderboard':
-                const best_users = await UserService.Leaderboard();
+                const limit = interaction.options.getInteger('limit') || 10;
+                const best_users = await UserService.Leaderboard(limit);
 
                 const embed = new EmbedBuilder()
                     .setTitle('Leaderboard')
