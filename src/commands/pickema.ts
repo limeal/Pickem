@@ -228,11 +228,30 @@ export default {
             case 'unprogram':
                 const name5 = interaction.options.getString('name');
 
-                const task = tasks.get(name5!);
-                if (!task) return interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
-                task.stop();
-                tasks.delete(name5!);
-                return interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
+                try {
+                    const formU = await prisma.form.findFirst({
+                        where: {
+                            title: name5!,
+                        },
+                    });
+
+                    if (!formU) throw 'Invalid form';
+
+                    const task = tasks.get(name5!);
+                    if (!task) return interaction.reply({ content: `The task with name ${name5} does not exist.`, ephemeral: true });
+
+                    await prisma.formCron.delete({
+                        where: {
+                            formId: formU.id
+                        },
+                    });
+
+                    task.stop();
+                    tasks.delete(name5!);
+                    return interaction.reply({ content: `Unprogrammed pickem with name ${name5}`, ephemeral: true });
+                } catch (error: any) {
+                    return interaction.reply({ content: `An error occured while unprogramming pickem with name ${name5}`, ephemeral: true })
+                }
             case 'inject':
                 return FormService.Inject(interaction, interaction.options.getString('file_loc')!);
             case 'regen':
