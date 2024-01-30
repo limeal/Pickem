@@ -17,5 +17,11 @@
                 "pattern": "^(\\+|-|\\*)?([0-9])+$"
             }
         }
-    }
+    },
+    "required": [
+        "ref",
+        "answers",
+        "points"
+    ],
+    "additionalProperties": false
 }
