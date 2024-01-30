@@ -21,9 +21,9 @@ export default ((props: InteractionProps) => new (class FillFormButton extends B
     constructor() {
         super({
             customId: props.custom_id,
-            title: "Fill form",
+            title: "Participer",
             style: ButtonStyle.Primary,
-            emoji: '📝'
+            emoji: '🎲'
         });
     }
 

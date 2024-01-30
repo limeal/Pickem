@@ -37,7 +37,7 @@ export default class ResultService {
         const mask = await Jimp.read('assets/images/mask.png');
         userAvatar.mask(mask.resize(size, size), 0, 0);
 
-        image.print(font, 820, 50, user.username);
+        image.print(font, 800, 50, user.username);
         image.composite(userAvatar, 765, 130);
 
         for (let i = 0; i < response.submissions.length; i++) {
