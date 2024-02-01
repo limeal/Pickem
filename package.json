@@ -10,7 +10,7 @@
     "db:pull": "prisma db pull",
     "db:reset": "prisma migrate reset",
     "db:format": "prisma format",
-    "commands:reload": "ts-node -r tsconfig-paths/register src/scripts/register.ts",
+    "commands:reload": "ts-node -r tsconfig-paths/register src/register.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -4,6 +4,7 @@ import {
     PermissionFlagsBits,
     ChannelType,
     User,
+    AttachmentBuilder,
 } from 'discord.js';
 import cron from 'node-cron';
 
@@ -19,6 +20,8 @@ import ResultService from 'services/result.service';
 import { Form, FormStatus, UserResponse, UserSubmission } from '@prisma/client';
 import ListQuestionsMessage from 'messages/ListQuestionsMessage';
 import WhosMessage from 'messages/WhosMessage';
+import { spawnSync } from "node:child_process";
+import fs from 'fs';
 
 export default {
     data: new SlashCommandBuilder()
@@ -165,6 +168,22 @@ export default {
             subcommand
                 .setName('whos')
                 .setDescription('Whos in a pickem.')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('export')
+                .setDescription('Export database.')
+        )
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('import')
+                .setDescription('Import database.')
+                .addStringOption(option =>
+                    option
+                        .setName('file_loc')
+                        .setDescription('The file_loc of the import.')
+                        .setRequired(true)
+                )
         )
     ,
     execute: async (interaction: ChatInputCommandInteraction) => {
@@ -362,6 +381,31 @@ export default {
                 });
 
                 return interaction.reply(WhosMessage(wform, users));
+            case 'export':
+                const env : NodeJS.ProcessEnv = {};
+                if (process.env.DATABASE_PASSWORD) env.PGPASSWORD = process.env.DATABASE_PASSWORD;
+                const exportCmd = spawnSync(`pg_dump`, ["--host", "localhost", "--port", process.env.DATABASE_PORT || '5432', "--username", process.env.DATABASE_USER || 'postgres', "--format", "plain", "--verbose", "--file", "backup.sql", process.env.DATABASE_NAME || 'postgres'], {
+                    stdio: 'inherit',
+                    env
+                });
+
+                if (exportCmd.status !== 0) return interaction.reply({ content: `An error occured while exporting the database`, ephemeral: true });
+                
+                // Get the file
+                const attachment = new AttachmentBuilder(fs.readFileSync('backup.sql')).setName('backup.sql');
+                if (!attachment) return interaction.reply({ content: `An error occured while exporting the database`, ephemeral: true });
+                
+                return interaction.reply({ content: `Database successfully exported`, files: [attachment] });
+            case 'import':
+                const env2 : NodeJS.ProcessEnv = {};
+                if (process.env.DATABASE_PASSWORD) env2.PGPASSWORD = process.env.DATABASE_PASSWORD;
+                const importCmd = spawnSync(`psql`, ["--host", "localhost", "--port", process.env.DATABASE_PORT || '5432', "--username", process.env.DATABASE_USER || 'postgres', "--dbname", process.env.DATABASE_NAME || 'postgres', "--file", interaction.options.getString('file_loc')!], {
+                    stdio: 'inherit',
+                    env: env2
+                });
+                if (importCmd.status !== 0) return interaction.reply({ content: `An error occured while importing the database`, ephemeral: true });
+                
+                return interaction.reply({ content: `Database successfully imported`, ephemeral: true });
             default:
                 break;
 

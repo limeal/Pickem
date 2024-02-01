@@ -57,12 +57,15 @@ export default class UserService {
             if (count === question.answers.length) {
                 switch (question.points[0]) {
                     case '*':
+                        console.log(score, question.points.slice(1));
                         score *= parseInt(question.points.slice(1));
                         break;
                     case '-':
+                        console.log(score, question.points.slice(1));
                         score -= parseInt(question.points.slice(1));
                         break;
                     default:
+                        console.log(score, question.points.slice(1));
                         score += parseInt(question.points.slice(1));
                         break;
                 }
