@@ -154,7 +154,7 @@ model UserResponse {
     userId    String @unique
     channelId String @default("") // Channel id where the user is completing the form
 
-    respThreadId  String @default("") // Channel id where the user has the answer of the sform
+    respChannelId  String @default("") // Channel id where the user has the answer of the sform
     respMessageId String @default("") // Message id where the user has the answer of the sform
 
     status    UserResponseStatus @default(PENDING) // pending, completed

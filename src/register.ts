@@ -20,7 +20,7 @@ dotenv.config();
 
 
         console.log(`Removed all application (/) commands.`);
-        console.log(commands.map(command => command.data.name));
+        console.log(commands.map(command => command.data.toJSON()));
 
         // The put method is used to fully refresh all commands in the guild with the current set
         const data: any = await rest.put(

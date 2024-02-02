@@ -173,6 +173,7 @@ export default class FormService {
 
                 await prisma.formQuestion.update({
                     where: {
+                        formId: fform.id,
                         id: question?.id,
                     },
                     data: {
@@ -185,6 +186,8 @@ export default class FormService {
             const userResponses = await prisma.userResponse.findMany({
                 where: {
                     formId: fform.id,
+                    status: UserResponseStatus.COMPLETED,
+                    score: { equals: 0 }
                 },
                 include: {
                     submissions: true,
@@ -192,8 +195,6 @@ export default class FormService {
             });
 
             for (const userResponse of userResponses) {
-                if (userResponse.status === UserResponseStatus.PENDING) continue;
-
                 try {
                     await UserService.UpdateScore(userResponse);
                 } catch (err) {

@@ -2,14 +2,14 @@
     {
         "ref": 0,
         "answers": [
-            "Equipe 1"
+            "TheFire Demons"
         ],
       	"points": "+10"
     },
     {
         "ref": 1,
         "answers": [
-            "Joueur 2"
+            "Oompa0Loompa"
         ],
       	"points": "+12"
     },
@@ -72,14 +72,14 @@
     {
         "ref": 11,
         "answers": [
-            "4"
+            "5"
         ],
       	"points": "+13"
     },
     {
         "ref": 12,
         "answers": [
-            "4"
+            "5"
         ],
       	"points": "+12"
     },
@@ -100,7 +100,7 @@
     {
         "ref": 16,
         "answers": [
-            "4"
+            "5"
         ],
       	"points": "+5"
     },
@@ -114,7 +114,7 @@
     {
         "ref": 18,
         "answers": [
-            "21 à 25 Minutes"
+            "6 a 10 Minutes"
         ],
       	"points": "*2"
     }

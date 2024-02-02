@@ -51,25 +51,13 @@ export default class ResultService {
             }
         }
 
-        let thread = response.respThreadId ? resultChannel.threads.cache.get(response.respThreadId) : undefined;
-        let message = (response.respMessageId && thread) ? (thread.messages.cache.get(response.respMessageId) || await thread.messages.fetch(response.respMessageId)) : undefined;
-
-        console.log(thread, message);
-        if (!thread) {
-            thread = await resultChannel.threads.create({
-                name: `Result ${user.username}`,
-                autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-                type: ChannelType.PublicThread
-            });
-
-        }
-
+        let message = response.respMessageId ? (resultChannel.messages.cache.get(response.respMessageId) || await resultChannel.messages.fetch(response.respMessageId)) : undefined;
         const attachmentFile = new AttachmentBuilder(await image.getBufferAsync(Jimp.MIME_PNG));
 
         if (!message)
-            message = await thread.send({ files: [attachmentFile] })
+            message = await resultChannel.send({ content: `Ticket de <@${response.userId}>`, files: [attachmentFile] })
         else
-            await message.edit({ files: [attachmentFile] })
+            await message.edit({ content: `Ticket de <@${response.userId}>`, files: [attachmentFile] })
 
         await prisma.userResponse.update({
             where: {
@@ -77,12 +65,12 @@ export default class ResultService {
                 userId: user.id,
             },
             data: {
-                respThreadId: thread.id,
+                respChannelId: resultChannel.id,
                 respMessageId: message.id,
             },
         });
 
-        return channel.send(RecapMessage(thread.id)).then(m => {
+        return channel.send(RecapMessage(resultChannel.id)).then(m => {
             setTimeout(() => {
                 m.channel.delete();
             }, 60 * 1000);

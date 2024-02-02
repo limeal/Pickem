@@ -89,7 +89,6 @@ let guild: Guild;
             ]
         });
 
-
         console.log(`Logged in as ${client.user!.tag}!`);
     });
 

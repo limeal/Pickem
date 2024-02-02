@@ -1,7 +1,7 @@
-import { Guild, User } from "discord.js";
+import { ChannelType, Guild, GuildBasedChannel, GuildTextBasedChannel, TextChannel, User } from "discord.js";
 
 import prisma from "../prisma";
-import { FormStatus, UserResponse, UserResponseStatus, UserSubmission } from "@prisma/client";
+import { Form, FormQuestion, FormStatus, UserResponse, UserResponseStatus, UserSubmission } from "@prisma/client";
 
 export default class UserService {
     public static async Clear(user: User, guild: Guild) {
@@ -18,8 +18,8 @@ export default class UserService {
             if (channelForm) await channelForm.delete();
         } catch (err: any) { }
         try {
-            const respthread = await guild.channels.fetch(userResponse.respThreadId);
-            if (respthread) await respthread.delete();
+            const respChannel: GuildBasedChannel | null = guild.channels.cache.get(userResponse.respChannelId) || await guild.channels.fetch(userResponse.respChannelId);
+            if (respChannel && respChannel.type === ChannelType.GuildText) await respChannel.messages.delete(userResponse.respMessageId);
         } catch (err: any) { }
 
         await prisma.userResponse.deleteMany({
@@ -33,39 +33,37 @@ export default class UserService {
         const form = await prisma.form.findFirst({
             where: {
                 active: true,
+                status: FormStatus.CLOSED,
             },
             include: {
                 questions: true,
-            },
-        })
+            }
+        });
 
         if (!form) throw 'An error occured, please contact an admin.';
-        if (userResponse.score > 0) return;
 
         let score = 0;
         for (const submission of userResponse.submissions) {
             // For each submission check if the answer of the submission is == to the question answer
             const question = form.questions.find((q) => q.id === submission.questionId);
             if (!question) throw 'An error occured, please contact an admin.';
+            if (!question.answers.length) continue;
             if (question.answers.length !== submission.answers.length) return 0;
-
+            
             let count = 0;
             for (let i = 0; i < question.answers.length; i++) {
-                if (question.answers[i] === submission.answers[i]) count++;
+                if (question.answers[i].toLowerCase().replaceAll(/ /g, '_') === submission.answers[i]) count++;
             }
 
             if (count === question.answers.length) {
                 switch (question.points[0]) {
                     case '*':
-                        console.log(score, question.points.slice(1));
                         score *= parseInt(question.points.slice(1));
                         break;
                     case '-':
-                        console.log(score, question.points.slice(1));
                         score -= parseInt(question.points.slice(1));
                         break;
                     default:
-                        console.log(score, question.points.slice(1));
                         score += parseInt(question.points.slice(1));
                         break;
                 }
