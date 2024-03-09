@@ -1,6 +1,7 @@
 import { Form, UserResponse, UserSubmission } from "@prisma/client"
 import { AttachmentBuilder, ChannelType, ChatInputCommandInteraction, GuildBasedChannel, MessageComponentInteraction, ModalSubmitInteraction, PermissionFlagsBits, TextBasedChannel, TextChannel, ThreadAutoArchiveDuration, User } from "discord.js"
 import Jimp from "jimp"
+import config from "@/config.json"
 
 import prisma from "../prisma"
 import RecapMessage from "messages/RecapMessage"
@@ -31,14 +32,14 @@ export default class ResultService {
         if (!font)
             return channel.send({ content: 'An error occured, please try again.' });
 
-        const size = 180;
+        const size = config.result_form.user.picture.size;
         const userAvatar = await Jimp.read(user.displayAvatarURL({ extension: 'png', size: 256 }));
         userAvatar.resize(size, size);
         const mask = await Jimp.read('assets/images/mask.png');
         userAvatar.mask(mask.resize(size, size), 0, 0);
 
-        image.print(font, 800, 50, user.username);
-        image.composite(userAvatar, 765, 130);
+        image.print(font, config.result_form.user.name.x, config.result_form.user.name.y, user.username);
+        image.composite(userAvatar, config.result_form.user.picture.x, config.result_form.user.picture.y);
 
         for (let i = 0; i < response.submissions.length; i++) {
             let question = questions.find(question => question.id === response.submissions[i].questionId);
