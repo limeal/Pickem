@@ -1,0 +1,22 @@
+{
+    "messages": {
+        "question-subtitle": "Une réponse possible bonne chance ;)",
+        "start-pickem-subtitle": "Cliquez sur le bouton pour débuter vos pronostics !"
+    },
+    "options": {
+        "show-selected_answers": true
+    },
+    "result_form": {
+        "user": {
+            "name": {
+                "x": 800,
+                "y": 50
+            },
+            "picture": {
+                "x": 765,
+                "y": 130,
+                "size": 180
+            }
+        } 
+    }
+}

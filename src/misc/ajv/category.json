@@ -11,7 +11,158 @@
         "questions": {
             "type": "array",
             "items": {
-                "$ref": "question.json#"
+                "$id": "question.json",
+                "type": "object",
+                "properties": {
+                    "ref": {
+                        "type": "number"
+                    },
+                    "title": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "patternProperties": {
+                                    ".*": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "title": {
+                                                    "type": "string"
+                                                },
+                                                "index": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "button",
+                            "text",
+                            "select"
+                        ]
+                    },
+                    "depend_on": {
+                        "type": "object",
+                        "default": 0,
+                        "properties": {
+                            "index": {
+                                "type": "number"
+                            },
+                            "rule": {
+                                "type": "string",
+                                "enum": [
+                                    "key",
+                                    "neq"
+                                ]
+                            }
+                        }
+                    },
+                    "regex": {
+                        "type": "string"
+                    },
+                    "style": {
+                        "type": "string"
+                    },
+                    "static_choices": {
+                        "type": "boolean"
+                    },
+                    "choices": {
+                        "anyOf": [
+                            {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "patternProperties": {
+                                    ".*": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "nb_answers": {
+                        "type": "number"
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "items": {
+                            "$id": "coords.json",
+                            "type": "object",
+                            "properties": {
+                                "x": {
+                                    "type": "number"
+                                },
+                                "y": {
+                                    "type": "number"
+                                },
+                                "width": {
+                                    "type": "number"
+                                },
+                                "height": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "x",
+                                "y",
+                                "width",
+                                "height"
+                            ],
+                            "additionalProperties": false
+                        }
+                    },
+                    "parts": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#"
+                        }
+                    }
+                },
+                "oneOf": [
+                    {
+                        "required": [
+                            "ref",
+                            "title",
+                            "parts"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "ref",
+                            "title",
+                            "type",
+                            "regex",
+                            "coordinates"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "ref",
+                            "title",
+                            "type",
+                            "nb_answers",
+                            "coordinates"
+                        ]
+                    }
+                ],
+                "additionalProperties": false
             }
         }
     },
